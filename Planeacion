@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Proyecto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .form-container {
+            display: none;
+            width: 50%;
+            height: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            overflow-y: auto; /* Permitir desplazamiento vertical si es necesario */
+        }
+        .form-page {
+            display: none;
+
+         }
+
+        .form-page.active {
+            display: block;
+        }
+
+
+      
+        .buttons {
+        position: absolute;
+        bottom: 20px; /* Fija los botones a 20px del fondo del contenedor */
+        left: 50%;
+        transform: translateX(-50%); /* Centra los botones horizontalmente */
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+
+
+
+      
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+        }
+
+          #machinesContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start; /* Asegura que los elementos estén alineados a la izquierda */
+          }
+
+      .machine-container {
+          display: flex;
+          align-items: center; /* Asegura que los elementos estén alineados verticalmente */
+          justify-content: flex-start; /* Alinea el contenido a la izquierda */
+          gap: 10px; /* Espaciado entre checkbox e inputs */
+          margin-bottom: 5px;
+      }
+      .machine-container label {
+          display: flex;
+          align-items: right;
+          width: 900%;
+      }
+      .machine-container input[type="number"] {
+          width: 10px;
+          margin-left: 20px;
+      }
+
+              
+        .machine-inputs {
+          margin-top: 10px;
+            display: flex;
+          width: 10px;
+            gap: 10px; /* Espaciado entre los inputs */
+        }
+
+
+
+        button:hover {
+            background-color: #ddd;
+        }
+
+      
+          /* Estilo para el canvas flotante */
+    .canvas-overlay {
+        position: fixed;
+        top: 0;
+        right: -350px; /* Oculto por defecto */
+        width: 300px;
+        height: 100%;
+        background: white;
+        box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
+        transition: right 0.3s ease-in-out;
+        padding: 20px;
+        z-index: 1000;
+        overflow-y: auto; /* Permitir desplazamiento vertical si es necesario */
+    }
+    
+    .canvas-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+
+      .fecha-navegacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.fecha-navegacion button {
+    padding: 5px 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.fecha-navegacion button:hover {
+    background-color: #ddd;
+}
+
+
+      
+    </style>
+
+  
+</head>
+<body>
+    <button id="nuevoProyecto">Nuevo Proyecto +</button>
+    
+    <div class="form-container" id="formContainer">
+        <div class="form-page active" id="page1">
+            <h2>Página 1: Datos del Proyecto</h2>
+            <label for="nombreProyecto">Nombre del Proyecto:</label>
+            <input type="text" id="nombreProyecto" placeholder="Ingrese el nombre del proyecto">
+            <br><br>
+            <label for="taskSelector">Seleccionar proceso:</label>
+            <select id="taskSelector">
+                <option value="Conversión">Conversión</option>
+                <option value="Corrugación">Corrugación</option>
+                <option value="Corte">Corte</option>
+                <option value="Impresión">Impresión</option>
+                <option value="Colaminado">Colaminado</option>
+                <option value="Troquelado">Troquelado</option>
+                <option value="Terminados">Terminados</option>
+                <option value="Pegue">Pegue</option>
+                <option value="Empaque">Empaque</option>
+                <option value="Logística">Logística</option>
+            </select>
+            <button id="agregarTarea">Agregar +</button>
+            <div id="taskList"></div>
+        </div>
+
+        <div class="form-page" id="page2">
+            <h2>Página 2: Máquinas</h2>
+            <div id="machinesContainer">
+                <label><input type="checkbox" class="machine" value="Corrugadora"> Corrugadora</label><br>
+                <label><input type="checkbox" class="machine" value="Cuchilla"> Cuchilla</label><br>
+                <label><input type="checkbox" class="machine" value="Guillotina"> Guillotina</label><br>
+                <label><input type="checkbox" class="machine" value="Troqueladora 1"> Troqueladora 1</label><br>
+                <label><input type="checkbox" class="machine" value="Troqueladora 2"> Troqueladora 2</label><br>
+                <label><input type="checkbox" class="machine" value="Colaminadora"> Colaminadora</label><br>
+                <label><input type="checkbox" class="machine" value="Flexo"> Flexo</label><br>
+            </div>
+            <div id="machineInputs"></div>
+        </div>
+
+        <div class="form-page" id="page3">
+            <h2>Página 3: Asignar Operarios</h2>
+            <div id="operariosContainer"></div>
+        </div>
+
+        <div class="form-page" id="page4">
+            <h2>Página 4: Detalles de Operarios</h2>
+            <div id="operarioDetalles"></div>
+        </div>
+
+        <div class="form-page" id="page5">
+            <h2>Página 5: Confirmar Proyecto</h2>
+            <label for="fechaInicio">Fecha y Hora de Inicio:</label>
+            <input type="datetime-local" id="fechaInicio">
+            <br><br>
+
+             <h3>Restricciones de Horario</h3>
+    <div id="restriccionesContainer"></div> <!-- Aquí aparecerán los horarios -->
+
+          
+            <button id="confirmar">Confirmar</button>
+        </div>
+
+        <div class="buttons">
+            <button id="anterior">Anterior</button>
+            <button id="siguiente">Siguiente</button>
+        </div>
+    </div>
+
+    <script>
+      let currentPage = 0;
+      const pages = document.querySelectorAll(".form-page");
+      let operariosAsignados = {};
+      let detallesOperarios = {}; // Ahora será detallesOperarios[operario][fecha]
+
+
+
+
+        document.getElementById("nuevoProyecto").addEventListener("click", function () {
+            document.getElementById("formContainer").style.display = "block";
+
+            // Ajustar la fecha a la zona horaria de Bogotá
+            let fechaBogota = new Date().toLocaleString("sv-SE", { timeZone: "America/Bogota" }).replace(" ", "T").slice(0, 16);
+            document.getElementById("fechaInicio").value = fechaBogota;
+        });
+
+        function showPage(index) {
+            pages.forEach((page, i) => {
+                page.classList.toggle("active", i === index);
+            });
+        }
+
+function showPage(index) {
+    pages.forEach((page, i) => {
+        page.classList.remove("active"); // Ocultar todas las páginas
+    });
+    pages[index].classList.add("active"); // Mostrar solo la actual
+
+    // Si estamos en la página 3, actualizar la lista de operarios
+    if (index === 2) {
+        actualizarMaquinasEnOperarios();
+    }
+
+    // Si se muestra la página 4, actualizar los operarios
+    if (index === 3) {
+        actualizarOperariosEnPagina4();
+    }
+
+    // 🔹 Si se muestra la página 5, recalcular las restricciones
+    if (index === 4) {
+        calcularHorariosDisponibles();
+    }
+}
+
+
+// Evento para avanzar una sola página por vez
+document.getElementById("siguiente").addEventListener("click", function () {
+    if (currentPage < pages.length - 1) {
+        currentPage++; // Incrementa solo una vez
+        showPage(currentPage);
+        
+        // Si estamos en la página 3, actualizar la lista de operarios
+        if (currentPage === 2) { 
+            actualizarMaquinasEnOperarios();
+        }
+    }
+});
+
+// Evento para retroceder una página por vez
+document.getElementById("anterior").addEventListener("click", function () {
+    if (currentPage > 0) {
+        currentPage--; // Decrementa solo una vez
+        showPage(currentPage);
+    }
+});
+
+// Mostrar la primera página correctamente al iniciar
+showPage(currentPage);
+
+        const taskOrder = ["Conversión", "Corrugación", "Corte", "Impresión", "Colaminado", "Troquelado", "Terminados", "Pegue", "Empaque", "Logística"];
+        let selectedTasks = [];
+
+        document.getElementById("agregarTarea").addEventListener("click", function () {
+            const selectedTask = document.getElementById("taskSelector").value;
+            if (!selectedTasks.includes(selectedTask)) {
+                selectedTasks.push(selectedTask);
+                selectedTasks.sort((a, b) => taskOrder.indexOf(a) - taskOrder.indexOf(b));
+                renderTaskList();
+            }
+        });
+
+        function renderTaskList() {
+            const taskList = document.getElementById("taskList");
+            taskList.innerHTML = "";
+            selectedTasks.forEach(task => {
+                let taskItem = document.createElement("div");
+                taskItem.classList.add("task-item");
+                taskItem.innerHTML = `${task} <button onclick='removeTask("${task}")'>X</button>`;
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        function removeTask(task) {
+            selectedTasks = selectedTasks.filter(t => t !== task);
+            renderTaskList();
+        }
+
+
+      
+document.querySelectorAll(".machine").forEach(machine => {
+    machine.addEventListener("change", function () {
+        let parentContainer = this.closest("label"); // Encuentra el label del checkbox
+        
+        // Verifica si ya existen los inputs para no duplicarlos
+        let existingInputs = parentContainer.querySelector(".machine-inputs");
+
+        if (this.checked && !existingInputs) {
+            let inputsContainer = document.createElement("div");
+            inputsContainer.classList.add("machine-inputs");
+            inputsContainer.innerHTML = `
+                <label>Cantidad: <input type="number" class="cantidad" min="1"></label>
+                <label>Tiempo: <input type="number" class="tiempo" min="1"></label>
+            `;
+            parentContainer.appendChild(inputsContainer);
+        } else if (!this.checked && existingInputs) {
+            existingInputs.remove(); // Elimina los inputs si se desmarca el checkbox
+        }
+    });
+});
+
+
+
+// Escuchar cambios en los checkboxes para actualizar la página 3 en tiempo real
+document.querySelectorAll(".machine").forEach(machine => {
+    machine.addEventListener("change", actualizarMaquinasEnOperarios);
+});
+
+// Función mejorada para actualizar la lista en la página 3
+function actualizarMaquinasEnOperarios() {
+    let operariosContainer = document.getElementById("operariosContainer");
+    operariosContainer.innerHTML = ""; // Limpiar antes de actualizar
+
+    document.querySelectorAll(".machine:checked").forEach(machine => {
+        let divMaquina = document.createElement("div");
+        divMaquina.classList.add("operario-item");
+        divMaquina.style.marginBottom = "10px"; // Agrega espacio entre elementos
+
+        // Texto de la máquina
+        let machineLabel = document.createElement("span");
+        machineLabel.textContent = machine.value;
+        machineLabel.style.fontWeight = "bold";
+
+        // Input para el operario
+        let inputOperario = document.createElement("input");
+        inputOperario.type = "text";
+        inputOperario.placeholder = "Nombre del operario";
+        inputOperario.classList.add("operario-input");
+        inputOperario.style.marginLeft = "10px"; // Espacio entre texto e input
+
+
+              // Verificar si la máquina ya tenía un operario asignado
+        if (operariosAsignados[machine.value]) {
+            inputOperario.value = operariosAsignados[machine.value];
+        }
+
+        // Guardar los cambios cuando el usuario escriba
+        inputOperario.addEventListener("input", function () {
+            operariosAsignados[machine.value] = inputOperario.value;
+        });
+
+      
+
+        divMaquina.appendChild(machineLabel);
+        divMaquina.appendChild(inputOperario);
+        operariosContainer.appendChild(divMaquina);
+    });
+}
+
+function actualizarOperariosEnPagina4() {
+    let operarioDetallesContainer = document.getElementById("operarioDetalles");
+    operarioDetallesContainer.innerHTML = ""; // Limpiar antes de actualizar
+
+    document.querySelectorAll("#operariosContainer .operario-item").forEach(operarioDiv => {
+        let operarioNombre = operarioDiv.querySelector(".operario-input").value.trim();
+
+        if (operarioNombre) { // Solo agregar si el campo no está vacío
+            let operarioElemento = document.createElement("div");
+            operarioElemento.textContent = operarioNombre;
+            operarioElemento.classList.add("operario-detalle-item");
+
+            // Botón de "+"
+            let botonAgregar = document.createElement("button");
+            botonAgregar.textContent = "+";
+            botonAgregar.style.marginLeft = "10px";
+            botonAgregar.addEventListener("click", function () {
+            abrirCanvas(operarioNombre);
+              });
+
+            operarioElemento.appendChild(botonAgregar);
+            operarioDetallesContainer.appendChild(operarioElemento);
+        }
+    });
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+      
+function abrirCanvas(nombreOperario) {
+    let canvas = document.getElementById("operarioCanvas");
+    let operarioNombreElemento = document.getElementById("operarioNombre");
+
+    if (!canvas || !operarioNombreElemento) {
+        console.error("Error: No se encontró el canvas o el nombre del operario en el DOM.");
+        return;
+    }
+
+    console.log("Abriendo canvas para:", nombreOperario);
+    operarioNombreElemento.textContent = `Operario: ${nombreOperario}`;
+    
+    // Obtener referencias a los inputs
+    let detallesInput = document.getElementById("detallesInput");
+    let horaEntrada = document.getElementById("horaEntrada");
+    let horaSalida = document.getElementById("horaSalida");
+    let horarioAlmuerzo = document.getElementById("horarioAlmuerzo");
+    let duracionAlmuerzo = document.getElementById("duracionAlmuerzo");
+    let extraFieldsContainer = document.getElementById("extraFieldsContainer");
+
+    // Limpiar campos adicionales
+    extraFieldsContainer.innerHTML = "";
+
+    // Si ya hay datos guardados, cargarlos
+let fechaSeleccionada = fechaActual.toISOString().split("T")[0]; // Obtener la fecha actual del canvas
+
+if (detallesOperarios[nombreOperario] && detallesOperarios[nombreOperario][fechaSeleccionada]) {
+    let detalles = detallesOperarios[nombreOperario][fechaSeleccionada];
+
+        detallesInput.value = detalles.detalles || "";
+        horaEntrada.value = detalles.horaEntrada || "";
+        horaSalida.value = detalles.horaSalida || "";
+        horarioAlmuerzo.value = detalles.horarioAlmuerzo || "";
+        duracionAlmuerzo.value = detalles.duracionAlmuerzo || "";
+
+        // Restaurar horarios extra
+        if (detalles.horariosExtras) {
+            detalles.horariosExtras.forEach(extra => {
+                let newField = document.createElement("div");
+                newField.classList.add("extra-field");
+                newField.style.display = "flex";
+                newField.style.alignItems = "center";
+                newField.style.marginBottom = "5px";
+                newField.style.gap = "10px";
+
+                let inputHora = document.createElement("input");
+                inputHora.type = "time";
+                inputHora.value = extra.hora;
+                inputHora.classList.add("extra-hora");
+
+                let inputDuracion = document.createElement("input");
+                inputDuracion.type = "number";
+                inputDuracion.min = "0";
+                inputDuracion.value = extra.duracion;
+                inputDuracion.classList.add("extra-duracion");
+
+                let inputDescripcion = document.createElement("input");
+                inputDescripcion.type = "text";
+                inputDescripcion.value = extra.descripcion;
+                inputDescripcion.classList.add("extra-descripcion");
+
+                let removeBtn = document.createElement("button");
+                removeBtn.textContent = "X";
+                removeBtn.style.marginLeft = "10px";
+                removeBtn.style.color = "white";
+                removeBtn.style.backgroundColor = "red";
+                removeBtn.style.border = "none";
+                removeBtn.style.padding = "5px";
+                removeBtn.style.cursor = "pointer";
+
+                removeBtn.onclick = function () {
+                    extraFieldsContainer.removeChild(newField);
+                };
+
+                newField.appendChild(inputHora);
+                newField.appendChild(inputDuracion);
+                newField.appendChild(inputDescripcion);
+                newField.appendChild(removeBtn);
+                
+                extraFieldsContainer.appendChild(newField);
+            });
+        }
+    } else {
+        // Si no hay datos guardados, limpiar los campos
+        detallesInput.value = "";
+        horaEntrada.value = "";
+        horaSalida.value = "";
+        horarioAlmuerzo.value = "";
+        duracionAlmuerzo.value = "";
+    }
+
+    // Mostrar el canvas
+    canvas.style.right = "0";
+    
+    // Guardar temporalmente el operario actual en una variable global
+    canvas.setAttribute("data-operario", nombreOperario);
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    function cerrarCanvas() {
+        document.getElementById("operarioCanvas").style.right = "-350px";
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////      
+      
+      
+function guardarDetalles() {
+    let canvas = document.getElementById("operarioCanvas");
+    let operarioActual = canvas.getAttribute("data-operario");
+
+    if (!operarioActual) {
+        console.error("Error: No se ha seleccionado un operario.");
+        return;
+    }
+
+    let detallesInput = document.getElementById("detallesInput");
+    let horaEntrada = document.getElementById("horaEntrada");
+    let horaSalida = document.getElementById("horaSalida");
+    let horarioAlmuerzo = document.getElementById("horarioAlmuerzo");
+    let duracionAlmuerzo = document.getElementById("duracionAlmuerzo");
+
+    // Verificar si los elementos existen
+    if (!detallesInput || !horaEntrada || !horaSalida || !horarioAlmuerzo || !duracionAlmuerzo) {
+        console.error("Error: Uno o más elementos no existen en el DOM.");
+        alert("Error: Uno o más elementos no existen en el formulario.");
+        return;
+    }
+
+    // Obtener los valores de los inputs
+    let detalles = detallesInput.value.trim();
+    let entrada = horaEntrada.value.trim();
+    let salida = horaSalida.value.trim();
+    let almuerzo = horarioAlmuerzo.value.trim();
+    let duracion = duracionAlmuerzo.value.trim();
+
+    // Capturar horarios extra
+    let horariosExtras = [];
+    document.querySelectorAll("#extraFieldsContainer .extra-field").forEach(field => {
+        let inputHora = field.querySelector(".extra-hora");
+        let inputDuracion = field.querySelector(".extra-duracion");
+        let inputDescripcion = field.querySelector(".extra-descripcion");
+
+        if (inputHora && inputDuracion && inputDescripcion) {
+            let hora = inputHora.value;
+            let duracion = inputDuracion.value;
+            let descripcion = inputDescripcion.value;
+
+            if (hora && duracion && descripcion) {
+                horariosExtras.push({ hora, duracion, descripcion });
+            }
+        }
+    });
+
+let fechaSeleccionada = fechaActual.toISOString().split("T")[0]; // Obtener fecha en formato YYYY-MM-DD
+
+// Asegurar que cada operario tenga un objeto de fechas
+if (!detallesOperarios[operarioActual]) {
+    detallesOperarios[operarioActual] = {};
+}
+
+// Asegurar que la fecha tenga un objeto dentro del operario
+if (!detallesOperarios[operarioActual][fechaSeleccionada]) {
+    detallesOperarios[operarioActual][fechaSeleccionada] = {};
+}
+
+// Guardar los valores correctamente en la fecha seleccionada
+detallesOperarios[operarioActual][fechaSeleccionada] = {
+    detalles: detalles || "No especificado",
+    horaEntrada: entrada || "No especificado",
+    horaSalida: salida || "No especificado",
+    horarioAlmuerzo: almuerzo || "No especificado",
+    duracionAlmuerzo: duracion || "No especificado",
+    horariosExtras: horariosExtras
+};
+
+
+    console.log("Detalles guardados:", detallesOperarios[operarioActual]); // 🔹 Depuración en consola
+
+    alert(`Detalles guardados para ${operarioActual}`);
+
+    // Cerrar el canvas
+    cerrarCanvas();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function agregarCampoExtra() {
+    let container = document.getElementById("extraFieldsContainer");
+
+    let newField = document.createElement("div");
+    newField.classList.add("extra-field");
+    newField.style.display = "flex";
+    newField.style.alignItems = "center";
+    newField.style.marginBottom = "5px";
+    newField.style.gap = "10px";
+
+    // Input de hora
+    let inputHora = document.createElement("input");
+    inputHora.type = "time";
+    inputHora.classList.add("extra-hora");
+
+    // Input de duración
+    let inputDuracion = document.createElement("input");
+    inputDuracion.type = "number";
+    inputDuracion.min = "0";
+    inputDuracion.placeholder = "Duración (min)";
+    inputDuracion.classList.add("extra-duracion");
+    inputDuracion.style.width = "80px";
+
+    // Input de descripción
+    let inputDescripcion = document.createElement("input");
+    inputDescripcion.type = "text";
+    inputDescripcion.placeholder = "Motivo";
+    inputDescripcion.classList.add("extra-descripcion");
+
+    // Botón para eliminar campo adicional
+    let removeBtn = document.createElement("button");
+    removeBtn.textContent = "X";
+    removeBtn.style.marginLeft = "10px";
+    removeBtn.style.color = "white";
+    removeBtn.style.backgroundColor = "red";
+    removeBtn.style.border = "none";
+    removeBtn.style.padding = "5px";
+    removeBtn.style.cursor = "pointer";
+    
+    removeBtn.onclick = function () {
+        container.removeChild(newField);
+    };
+
+    newField.appendChild(inputHora);
+    newField.appendChild(inputDuracion);
+    newField.appendChild(inputDescripcion);
+    newField.appendChild(removeBtn);
+    
+    container.appendChild(newField);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////      
+
+function calcularHorariosDisponibles() {
+    let restriccionesContainer = document.getElementById("restriccionesContainer");
+    restriccionesContainer.innerHTML = ""; // Limpiar contenido anterior
+
+    Object.keys(detallesOperarios).forEach(operario => {
+        let fechasOperario = detallesOperarios[operario];
+
+        Object.keys(fechasOperario).forEach(fecha => {
+            let datos = fechasOperario[fecha];
+
+            if (!datos.horaEntrada || !datos.horaSalida) {
+                return; // Si no hay entrada/salida, ignoramos esta fecha
+            }
+
+            let entrada = datos.horaEntrada;
+            let salida = datos.horaSalida;
+            let almuerzo = datos.horarioAlmuerzo;
+            let duracionAlmuerzo = parseInt(datos.duracionAlmuerzo) || 0;
+
+            let eventos = [];
+
+            // 1️⃣ Agregar eventos manuales ingresados
+            if (entrada) eventos.push({ hora: entrada, tipo: "Entrada" });
+            if (salida) eventos.push({ hora: salida, tipo: "Salida" });
+
+            // 2️⃣ Incluir horarios extras ingresados por el usuario
+            if (datos.horariosExtras) {
+                datos.horariosExtras.forEach(extra => {
+                    let finExtra = sumarMinutos(extra.hora, parseInt(extra.duracion));
+                    eventos.push({ hora: extra.hora, tipo: extra.descripcion, fin: finExtra });
+                });
+            }
+
+            // 3️⃣ Agregar eventos calculados (Finales de almuerzo y horarios extra)
+            if (almuerzo && duracionAlmuerzo > 0) {
+                let almuerzoFin = sumarMinutos(almuerzo, duracionAlmuerzo);
+                eventos.push({ hora: almuerzo, tipo: "Almuerzo", fin: almuerzoFin });
+            }
+
+            // 4️⃣ Ordenar eventos cronológicamente
+            eventos.sort((a, b) => a.hora.localeCompare(b.hora));
+
+            // 5️⃣ Calcular intervalos de trabajo
+            let eventosConTrabajo = [];
+            for (let i = 0; i < eventos.length - 1; i++) {
+                let inicio = eventos[i].hora;
+                let fin = eventos[i + 1].hora;
+                let tipoInicio = eventos[i].tipo;
+                let tipoFin = eventos[i + 1].tipo;
+
+                eventosConTrabajo.push(eventos[i]); // Agregar evento actual
+
+                // Generar intervalo de trabajo cuando hay espacio entre eventos
+                if (eventos[i].fin) {
+                    let finReal = eventos[i].fin;
+                    if (finReal < fin) {
+                        eventosConTrabajo.push({ hora: finReal, fin: fin, tipo: "Trabajo" });
+                    }
+                } else {
+                    eventosConTrabajo.push({ hora: inicio, fin: fin, tipo: "Trabajo" });
+                }
+            }
+
+            // Añadir el último evento de la lista
+            eventosConTrabajo.push(eventos[eventos.length - 1]);
+
+            // 6️⃣ Mostrar horarios ordenados en la página 5
+            let bloqueOperario = document.createElement("div");
+            bloqueOperario.style.marginBottom = "15px";
+
+            let horariosTexto = eventosConTrabajo.map(h => 
+                h.fin ? `${h.hora} - ${h.fin} (${h.tipo})` : `${h.hora} (${h.tipo})`
+            ).join("<br>");
+
+            bloqueOperario.innerHTML = `<strong>${operario} (${fecha})</strong><br>${horariosTexto}`;
+            restriccionesContainer.appendChild(bloqueOperario);
+        });
+    });
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Función auxiliar para sumar minutos a un horario
+function sumarMinutos(hora, minutos) {
+    let [h, m] = hora.split(":").map(Number);
+    let fecha = new Date();
+    fecha.setHours(h, m);
+    fecha.setMinutes(fecha.getMinutes() + minutos);
+    let hh = String(fecha.getHours()).padStart(2, "0");
+    let mm = String(fecha.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+}
+      
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      let fechaActual = new Date(); // Fecha inicial en el canvas
+function actualizarFechaCanvas() {
+    let opcionesFormato = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    let opcionesDia = { weekday: 'long' }; // Formato para el día de la semana
+
+    let fechaElemento = document.getElementById("fechaActual");
+    let diaElemento = document.getElementById("diaSemana");
+
+    if (!fechaElemento || !diaElemento) {
+        console.error("Error: No se encontró el elemento de fecha o día en el DOM.");
+        return;
+    }
+
+    let fechaFormateada = fechaActual.toISOString().split("T")[0]; // Obtener fecha en formato YYYY-MM-DD
+
+    fechaElemento.textContent = fechaActual.toLocaleDateString('es-CO', opcionesFormato);
+    diaElemento.textContent = fechaActual.toLocaleDateString('es-CO', opcionesDia);
+
+    // Verificar si es festivo
+    if (festivosColombia.includes(fechaFormateada)) {
+        diaElemento.textContent += " (Festivo)";
+        diaElemento.style.color = "red";
+    } else {
+        diaElemento.style.color = "black";
+    }
+
+    // 🔹 Recalcular horarios al cambiar la fecha
+    calcularHorariosDisponibles();
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ // Lista de festivos en Colombia para el año 2025
+const festivosColombia = [
+    "2025-01-01", // Año Nuevo
+    "2025-01-06", // Día de los Reyes Magos
+    "2025-03-24", // Día de San José
+    "2025-04-17", // Jueves Santo
+    "2025-04-18", // Viernes Santo
+    "2025-05-01", // Día del Trabajo
+    "2025-06-02", // Día de la Ascensión
+    "2025-06-23", // Corpus Christi
+    "2025-06-30", // Día de San Pedro y San Pablo
+    "2025-07-20", // Día de la Independencia
+    "2025-08-07", // Batalla de Boyacá
+    "2025-08-18", // Asunción de la Virgen
+    "2025-10-13", // Día de la Raza
+    "2025-11-03", // Día de Todos los Santos
+    "2025-11-17", // Independencia de Cartagena
+    "2025-12-08", // Inmaculada Concepción
+    "2025-12-25"  // Navidad
+];
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    let prevBtn = document.getElementById("prevFecha");
+    let nextBtn = document.getElementById("nextFecha");
+
+    if (!prevBtn || !nextBtn) {
+        console.error("Error: No se encontraron los botones de navegación de fecha en el DOM.");
+        return;
+    }
+
+    prevBtn.addEventListener("click", function () {
+        fechaActual.setDate(fechaActual.getDate() - 1);
+        actualizarFechaCanvas();
+    });
+
+    nextBtn.addEventListener("click", function () {
+        fechaActual.setDate(fechaActual.getDate() + 1);
+        actualizarFechaCanvas();
+    });
+
+    let canvas = document.getElementById("operarioCanvas");
+    if (canvas) {
+        canvas.addEventListener("transitionend", function () {
+            actualizarFechaCanvas();
+        });
+    }
+
+    // 🔹 Llamamos `calcularHorariosDisponibles()` al cargar la página
+    calcularHorariosDisponibles();
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////      
+      
+ document.getElementById("confirmar").addEventListener("click", function () {
+    calcularHorariosDisponibles(); // Itinerario basado en operarios
+    generarItinerarioProyecto(); // Nuevo itinerario basado en fechaInicio
+});
+     
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function generarItinerarioProyecto() {
+    let restriccionesContainer = document.getElementById("restriccionesContainer");
+
+    let fechaInicioInput = document.getElementById("fechaInicio").value;
+    if (!fechaInicioInput) {
+        console.warn("⚠️ No se ha definido una fecha de inicio.");
+        return;
+    }
+
+    const horaInicioProyecto = fechaInicioInput.split("T")[1]; 
+    const tiempoInput = document.querySelector(".tiempo");
+    const cantidadInput = document.querySelector(".cantidad");
+    const tiempo = tiempoInput ? parseFloat(tiempoInput.value) : 0;
+    const cantidad = cantidadInput ? parseFloat(cantidadInput.value) : 0;
+    let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
+    let eventos = [];
+    let contadorInterrupciones = 0; 
+
+    eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
+
+    Object.keys(detallesOperarios).forEach(operario => {
+        let fechasOperario = detallesOperarios[operario];
+
+        Object.keys(fechasOperario).forEach(fecha => {
+            let datos = fechasOperario[fecha];
+
+            if (!datos.horaEntrada || !datos.horaSalida) return; 
+
+            eventos.push({ hora: datos.horaEntrada, tipo: "Entrada", operario });
+            eventos.push({ hora: datos.horaSalida, tipo: "Salida", operario });
+
+            if (datos.horarioAlmuerzo && datos.duracionAlmuerzo) {
+                let finAlmuerzo = sumarMinutos(datos.horarioAlmuerzo, parseInt(datos.duracionAlmuerzo));
+                eventos.push({ hora: datos.horarioAlmuerzo, tipo: "Almuerzo", operario });
+                eventos.push({ hora: finAlmuerzo, tipo: "Fin Almuerzo", operario });
+            }
+
+            if (datos.horariosExtras) {
+                datos.horariosExtras.forEach(extra => {
+                    let finExtra = sumarMinutos(extra.hora, parseInt(extra.duracion));
+                    eventos.push({ hora: extra.hora, tipo: extra.descripcion, operario });
+                    eventos.push({ hora: finExtra, tipo: `Fin ${extra.descripcion}`, operario });
+                });
+            }
+        });
+    });
+
+    eventos.sort((a, b) => a.hora.localeCompare(b.hora));
+
+    let horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
+    let indexInicioProyecto = eventos.findIndex(evento => evento.hora === horaInicioProyecto);
+    let eventoSiguiente = (indexInicioProyecto !== -1 && indexInicioProyecto + 1 < eventos.length) 
+        ? eventos[indexInicioProyecto + 1] 
+        : null;
+
+    let diferencia = eventoSiguiente ? calcularDiferenciaMinutos(horaFinProyecto, eventoSiguiente.hora) : null;
+
+    if (diferencia !== null) {
+        if (diferencia >= 0) {
+            eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
+        } else {
+            let eventoContinuacion = eventos.find(e => e.tipo.includes("Fin") || e.tipo === "Salida");
+            if (eventoContinuacion) {
+                contadorInterrupciones++; 
+                let nuevoInicioProyecto = `Inicio Proyecto ${contadorInterrupciones}`;
+                eventos.push({ hora: eventoContinuacion.hora, tipo: nuevoInicioProyecto });
+
+                let nuevoFinProyecto = sumarMinutos(eventoContinuacion.hora, Math.abs(diferencia));
+                eventos.push({ hora: nuevoFinProyecto, tipo: `Fin Proyecto ${contadorInterrupciones}` });
+
+                let eventoSiguiente2 = eventos.find(e => e.hora > nuevoFinProyecto);
+                let diferencia2 = eventoSiguiente2 ? calcularDiferenciaMinutos(nuevoFinProyecto, eventoSiguiente2.hora) : null;
+
+                if (diferencia2 !== null && diferencia2 < 0) {
+                    contadorInterrupciones++;
+                    eventos.push({ hora: eventoSiguiente2.hora, tipo: `Inicio Proyecto ${contadorInterrupciones}` });
+                }
+            }
+        }
+    }
+
+    eventos.sort((a, b) => a.hora.localeCompare(b.hora));
+
+    let nuevoItinerario = document.createElement("div");
+    nuevoItinerario.style.marginTop = "20px";
+    nuevoItinerario.style.borderTop = "2px solid black";
+    nuevoItinerario.style.paddingTop = "10px";
+
+    let eventosTexto = eventos.map(h =>
+        h.operario
+            ? `${h.hora} (${h.tipo} - ${h.operario})`
+            : `${h.hora} (${h.tipo})`
+    ).join("<br>");
+
+    nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
+    restriccionesContainer.appendChild(nuevoItinerario);
+
+    if (eventoSiguiente) {
+        let duracionProyectoElemento = document.createElement("div");
+        duracionProyectoElemento.style.marginTop = "15px";
+        duracionProyectoElemento.style.fontWeight = "bold";
+        duracionProyectoElemento.style.color = "blue";
+
+        let signo = diferencia > 0 ? "+" : ""; 
+        duracionProyectoElemento.innerHTML = `⏳ <strong>${horaFinProyecto} - ${eventoSiguiente.hora} = ${signo}${diferencia} min</strong>`;
+
+        restriccionesContainer.appendChild(duracionProyectoElemento);
+    }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * 🔹 Función auxiliar para calcular la diferencia de minutos entre dos horas en formato HH:MM
+ */
+function calcularDiferenciaMinutos(hora1, hora2) {
+    let [h1, m1] = hora1.split(":").map(Number);
+    let [h2, m2] = hora2.split(":").map(Number);
+    
+    let fecha1 = new Date();
+    let fecha2 = new Date();
+
+    fecha1.setHours(h1, m1);
+    fecha2.setHours(h2, m2);
+
+    let diferencia = (fecha1 - fecha2) / (1000 * 60); // Diferencia en minutos
+
+    return Math.round(diferencia) ; // 🔹 Invertir el signo para que sea correcto
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+      
+    </script>
+
+<!-- Canvas para mostrar información adicional del operario -->
+<div id="operarioCanvas" class="canvas-overlay">
+    <div class="canvas-content">
+        <span class="close-btn" onclick="cerrarCanvas()">&times;</span>
+
+        <h2>Detalles del Operario</h2>
+
+
+<!-- Dentro del canvas -->
+<div class="fecha-navegacion">
+    <button id="prevFecha">&lt;</button>
+    <div>
+        <span id="fechaActual"></span><br>
+        <span id="diaSemana"></span> <!-- Nuevo elemento para el día de la semana -->
+    </div>
+    <button id="nextFecha">&gt;</button>
+</div>
+
+
+      
+        <p id="operarioNombre"></p>
+
+        <!-- Campos Fijos -->
+        <label for="horaEntrada">Hora de Entrada:</label>
+        <input type="time" id="horaEntrada"><br>
+
+        <label for="horaSalida">Hora de Salida:</label>
+        <input type="time" id="horaSalida"><br>
+
+        <label for="horarioAlmuerzo">Horario de Almuerzo:</label>
+        <input type="time" id="horarioAlmuerzo"><br>
+
+      
+     <!-- Nuevo Campo: Duración del Almuerzo -->
+        <label for="duracionAlmuerzo">Duración del Almuerzo (minutos):</label>
+        <input type="number" id="duracionAlmuerzo" min="0"><br>
+
+      
+        <!-- Contenedor para campos adicionales -->
+        <div id="extraFieldsContainer"></div>
+
+      <label for="detallesInput">Detalles Adicionales:</label>
+<textarea id="detallesInput" rows="4" cols="30"></textarea>
+
+      
+        <!-- Botón para agregar más campos -->
+        <button onclick="agregarCampoExtra()">Agregar Campo +</button>
+        <button onclick="guardarDetalles()">Guardar</button>
+    </div>
+</div>
+
+
+
+
+  
+</body>
+</html>
