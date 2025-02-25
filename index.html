@@ -865,68 +865,51 @@ function generarItinerarioProyecto() {
     const cantidadInput = document.querySelector(".cantidad");
     const tiempo = tiempoInput ? parseFloat(tiempoInput.value) : 0;
     const cantidad = cantidadInput ? parseFloat(cantidadInput.value) : 0;
+    
+    // Duración basada en tiempo por millar
     let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
     let eventos = [];
     let contadorInterrupciones = 0; 
+    let diferenciasMinutos = []; 
 
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
-
-    Object.keys(detallesOperarios).forEach(operario => {
-        let fechasOperario = detallesOperarios[operario];
-
-        Object.keys(fechasOperario).forEach(fecha => {
-            let datos = fechasOperario[fecha];
-
-            if (!datos.horaEntrada || !datos.horaSalida) return; 
-
-            eventos.push({ hora: datos.horaEntrada, tipo: "Entrada", operario });
-            eventos.push({ hora: datos.horaSalida, tipo: "Salida", operario });
-
-            if (datos.horarioAlmuerzo && datos.duracionAlmuerzo) {
-                let finAlmuerzo = sumarMinutos(datos.horarioAlmuerzo, parseInt(datos.duracionAlmuerzo));
-                eventos.push({ hora: datos.horarioAlmuerzo, tipo: "Almuerzo", operario });
-                eventos.push({ hora: finAlmuerzo, tipo: "Fin Almuerzo", operario });
-            }
-
-            if (datos.horariosExtras) {
-                datos.horariosExtras.forEach(extra => {
-                    let finExtra = sumarMinutos(extra.hora, parseInt(extra.duracion));
-                    eventos.push({ hora: extra.hora, tipo: extra.descripcion, operario });
-                    eventos.push({ hora: finExtra, tipo: `Fin ${extra.descripcion}`, operario });
-                });
-            }
-        });
-    });
 
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
 
     let horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
     let indexInicioProyecto = eventos.findIndex(evento => evento.hora === horaInicioProyecto);
-    let eventoSiguiente = (indexInicioProyecto !== -1 && indexInicioProyecto + 1 < eventos.length) 
-        ? eventos[indexInicioProyecto + 1] 
-        : null;
 
+    let eventoSiguiente = eventos.find(e => e.hora > horaInicioProyecto);
     let diferencia = eventoSiguiente ? calcularDiferenciaMinutos(horaFinProyecto, eventoSiguiente.hora) : null;
 
     if (diferencia !== null) {
+        diferenciasMinutos.push({ inicio: horaFinProyecto, fin: eventoSiguiente.hora, diferencia });
+
         if (diferencia >= 0) {
             eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
         } else {
-            let eventoContinuacion = eventos.find(e => e.tipo.includes("Fin") || e.tipo === "Salida");
-            if (eventoContinuacion) {
+            let proximoEventoFinal = eventos.find(e => 
+                e.tipo === "Fin Almuerzo" || e.tipo === "Fin Permiso Especial" || e.tipo === "Salida"
+            );
+
+            if (proximoEventoFinal) {
                 contadorInterrupciones++; 
-                let nuevoInicioProyecto = `Inicio Proyecto ${contadorInterrupciones}`;
-                eventos.push({ hora: eventoContinuacion.hora, tipo: nuevoInicioProyecto });
+                let inicioProyecto1 = proximoEventoFinal.hora;
+                eventos.push({ hora: inicioProyecto1, tipo: `Inicio Proyecto ${contadorInterrupciones}` });
 
-                let nuevoFinProyecto = sumarMinutos(eventoContinuacion.hora, Math.abs(diferencia));
-                eventos.push({ hora: nuevoFinProyecto, tipo: `Fin Proyecto ${contadorInterrupciones}` });
+                let finProyecto1 = sumarMinutos(inicioProyecto1, Math.abs(diferencia));
+                eventos.push({ hora: finProyecto1, tipo: `Fin Proyecto ${contadorInterrupciones}` });
 
-                let eventoSiguiente2 = eventos.find(e => e.hora > nuevoFinProyecto);
-                let diferencia2 = eventoSiguiente2 ? calcularDiferenciaMinutos(nuevoFinProyecto, eventoSiguiente2.hora) : null;
+                let eventoSiguiente2 = eventos.find(e => e.hora > finProyecto1);
+                let diferencia2 = eventoSiguiente2 ? calcularDiferenciaMinutos(finProyecto1, eventoSiguiente2.hora) : null;
 
-                if (diferencia2 !== null && diferencia2 < 0) {
-                    contadorInterrupciones++;
-                    eventos.push({ hora: eventoSiguiente2.hora, tipo: `Inicio Proyecto ${contadorInterrupciones}` });
+                if (diferencia2 !== null) {
+                    diferenciasMinutos.push({ inicio: finProyecto1, fin: eventoSiguiente2.hora, diferencia: diferencia2 });
+
+                    if (diferencia2 < 0) {
+                        contadorInterrupciones++;
+                        eventos.push({ hora: eventoSiguiente2.hora, tipo: `Inicio Proyecto ${contadorInterrupciones}` });
+                    }
                 }
             }
         }
@@ -947,19 +930,8 @@ function generarItinerarioProyecto() {
 
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
-
-    if (eventoSiguiente) {
-        let duracionProyectoElemento = document.createElement("div");
-        duracionProyectoElemento.style.marginTop = "15px";
-        duracionProyectoElemento.style.fontWeight = "bold";
-        duracionProyectoElemento.style.color = "blue";
-
-        let signo = diferencia > 0 ? "+" : ""; 
-        duracionProyectoElemento.innerHTML = `⏳ <strong>${horaFinProyecto} - ${eventoSiguiente.hora} = ${signo}${diferencia} min</strong>`;
-
-        restriccionesContainer.appendChild(duracionProyectoElemento);
-    }
 }
+
 
 
 
