@@ -866,18 +866,20 @@ function generarItinerarioProyecto() {
     const tiempo = tiempoInput ? parseFloat(tiempoInput.value) : 0;
     const cantidad = cantidadInput ? parseFloat(cantidadInput.value) : 0;
     
-    // Duración basada en tiempo por millar
     let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
     let eventos = [];
     let contadorInterrupciones = 0; 
     let diferenciasMinutos = []; 
 
+    // ✅ Registrar la entrada del operario (6:00 AM)
+    eventos.push({ hora: "06:00", tipo: "Entrada Operario" });
+
+    // ✅ Registrar inicio del proyecto
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
 
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
 
     let horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
-    let indexInicioProyecto = eventos.findIndex(evento => evento.hora === horaInicioProyecto);
 
     let eventoSiguiente = eventos.find(e => e.hora > horaInicioProyecto);
     let diferencia = eventoSiguiente ? calcularDiferenciaMinutos(horaFinProyecto, eventoSiguiente.hora) : null;
@@ -888,10 +890,9 @@ function generarItinerarioProyecto() {
         if (diferencia >= 0) {
             eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
         } else {
-            let proximoEventoFinal = eventos.find(e => 
-                e.tipo === "Fin Almuerzo" || e.tipo === "Fin Permiso Especial" || e.tipo === "Salida"
-            );
-
+            // ✅ Ubicar Fin Permiso Especial y NO Fin Almuerzo
+            let proximoEventoFinal = eventos.find(e => e.tipo === "Fin Permiso Especial");
+            
             if (proximoEventoFinal) {
                 contadorInterrupciones++; 
                 let inicioProyecto1 = proximoEventoFinal.hora;
@@ -931,7 +932,6 @@ function generarItinerarioProyecto() {
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
 }
-
 
 
 
