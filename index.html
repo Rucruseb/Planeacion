@@ -912,6 +912,10 @@ function generarItinerarioProyecto() {
     // ✅ Agregar inicio del proyecto
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
 
+    // ✅ Calcular `Fin Proyecto`
+    let horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
+    eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
+
     // ✅ Ordenar eventos **sin incluir `Salida`**
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
 
