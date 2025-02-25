@@ -860,41 +860,71 @@ function generarItinerarioProyecto() {
         return;
     }
 
-    // ✅ Definir los valores de los eventos clave al inicio
-    const detalles = detallesOperarios["operario1"]["fecha1"];
+    const horaInicioProyecto = fechaInicioInput.split("T")[1]; 
+    const tiempoInput = document.querySelector(".tiempo");
+    const cantidadInput = document.querySelector(".cantidad");
 
-    const horaEntrada = detalles.horaEntrada; // Hora de entrada
-    const horaSalida = detalles.horaSalida; // Hora de salida
+    const tiempo = tiempoInput ? parseFloat(tiempoInput.value) : 0;
+    const cantidad = cantidadInput ? parseFloat(cantidadInput.value) : 0;
+    let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
+    let eventos = [];
+    let diferenciasMinutos = []; 
 
-    const horaAlmuerzo = detalles.horarioAlmuerzo; // Inicio almuerzo
-    const duracionAlmuerzo = parseInt(detalles.duracionAlmuerzo); // Duración almuerzo en minutos
-    const horaFinAlmuerzo = sumarMinutos(horaAlmuerzo, duracionAlmuerzo); // Fin almuerzo
+    // ✅ Recorrer `detallesOperarios` dinámicamente
+    Object.keys(detallesOperarios).forEach(operario => {
+        let fechasOperario = detallesOperarios[operario];
 
-    const permisoEspecial = detalles.horariosExtras ? detalles.horariosExtras[0].hora : null; // Inicio permiso especial
-    const duracionPermisoEspecial = detalles.horariosExtras ? parseInt(detalles.horariosExtras[0].duracion) : 0; // Duración permiso especial
-    const horaFinPermisoEspecial = permisoEspecial ? sumarMinutos(permisoEspecial, duracionPermisoEspecial) : null; // Fin permiso especial
+        Object.keys(fechasOperario).forEach(fecha => {
+            let datos = fechasOperario[fecha];
 
-    // ✅ Definir lista de eventos y agregarlos en orden
-    let eventos = [
-        { hora: horaEntrada, tipo: "Entrada" },
-        { hora: horaAlmuerzo, tipo: "Almuerzo" },
-        { hora: horaFinAlmuerzo, tipo: "Fin Almuerzo" },
-        { hora: permisoEspecial, tipo: "Permiso Especial" },
-        { hora: horaFinPermisoEspecial, tipo: "Fin Permiso Especial" },
-        { hora: horaSalida, tipo: "Salida" }
-    ].filter(evento => evento.hora !== null); // Se eliminan eventos nulos
+            if (!datos || !datos.horaEntrada || !datos.horaSalida) return;
 
-    // ✅ Ordenar los eventos correctamente
+            // ✅ Definir eventos clave correctamente
+            let horaEntrada = datos.horaEntrada;
+            let horaSalida = datos.horaSalida;
+            let horaAlmuerzo = datos.horarioAlmuerzo;
+            let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
+            let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
+
+            let permisoEspecial = datos.horariosExtras ? datos.horariosExtras[0].hora : null;
+            let duracionPermisoEspecial = datos.horariosExtras ? parseInt(datos.horariosExtras[0].duracion) : 0;
+            let horaFinPermisoEspecial = permisoEspecial ? sumarMinutos(permisoEspecial, duracionPermisoEspecial) : null;
+
+            // ✅ Agregar eventos a la lista
+            eventos.push({ hora: horaEntrada, tipo: "Entrada", operario });
+            eventos.push({ hora: horaSalida, tipo: "Salida", operario });
+
+            if (horaAlmuerzo) {
+                eventos.push({ hora: horaAlmuerzo, tipo: "Almuerzo", operario });
+                if (horaFinAlmuerzo) eventos.push({ hora: horaFinAlmuerzo, tipo: "Fin Almuerzo", operario });
+            }
+
+            if (permisoEspecial) {
+                eventos.push({ hora: permisoEspecial, tipo: "Permiso Especial", operario });
+                if (horaFinPermisoEspecial) eventos.push({ hora: horaFinPermisoEspecial, tipo: "Fin Permiso Especial", operario });
+            }
+        });
+    });
+
+    // ✅ Agregar inicio del proyecto
+    eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
+
+    // ✅ Ordenar eventos correctamente
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
 
-    // ✅ Mostrar los eventos en pantalla
+    // ✅ Mostrar eventos en pantalla
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
     nuevoItinerario.style.borderTop = "2px solid black";
     nuevoItinerario.style.paddingTop = "10px";
 
-    let eventosTexto = eventos.map(h => `${h.hora} (${h.tipo})`).join("<br>");
-    nuevoItinerario.innerHTML = `<h3>📌 Itinerario de Eventos Clave</h3>${eventosTexto}`;
+    let eventosTexto = eventos.map(h =>
+        h.operario
+            ? `${h.hora} (${h.tipo} - ${h.operario})`
+            : `${h.hora} (${h.tipo})`
+    ).join("<br>");
+
+    nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
 }
 
