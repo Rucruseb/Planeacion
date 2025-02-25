@@ -860,79 +860,43 @@ function generarItinerarioProyecto() {
         return;
     }
 
-    const horaInicioProyecto = fechaInicioInput.split("T")[1]; 
-    const tiempoInput = document.querySelector(".tiempo");
-    const cantidadInput = document.querySelector(".cantidad");
-    const tiempo = tiempoInput ? parseFloat(tiempoInput.value) : 0;
-    const cantidad = cantidadInput ? parseFloat(cantidadInput.value) : 0;
-    
-    let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
-    let eventos = [];
-    let contadorInterrupciones = 0; 
-    let diferenciasMinutos = []; 
+    // ✅ Definir los valores de los eventos clave al inicio
+    const detalles = detallesOperarios["operario1"]["fecha1"];
 
-    // ✅ Registrar la entrada del operario (6:00 AM)
-    eventos.push({ hora: "06:00", tipo: "Entrada Operario" });
+    const horaEntrada = detalles.horaEntrada; // Hora de entrada
+    const horaSalida = detalles.horaSalida; // Hora de salida
 
-    // ✅ Registrar inicio del proyecto
-    eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
+    const horaAlmuerzo = detalles.horarioAlmuerzo; // Inicio almuerzo
+    const duracionAlmuerzo = parseInt(detalles.duracionAlmuerzo); // Duración almuerzo en minutos
+    const horaFinAlmuerzo = sumarMinutos(horaAlmuerzo, duracionAlmuerzo); // Fin almuerzo
 
+    const permisoEspecial = detalles.horariosExtras ? detalles.horariosExtras[0].hora : null; // Inicio permiso especial
+    const duracionPermisoEspecial = detalles.horariosExtras ? parseInt(detalles.horariosExtras[0].duracion) : 0; // Duración permiso especial
+    const horaFinPermisoEspecial = permisoEspecial ? sumarMinutos(permisoEspecial, duracionPermisoEspecial) : null; // Fin permiso especial
+
+    // ✅ Definir lista de eventos y agregarlos en orden
+    let eventos = [
+        { hora: horaEntrada, tipo: "Entrada" },
+        { hora: horaAlmuerzo, tipo: "Almuerzo" },
+        { hora: horaFinAlmuerzo, tipo: "Fin Almuerzo" },
+        { hora: permisoEspecial, tipo: "Permiso Especial" },
+        { hora: horaFinPermisoEspecial, tipo: "Fin Permiso Especial" },
+        { hora: horaSalida, tipo: "Salida" }
+    ].filter(evento => evento.hora !== null); // Se eliminan eventos nulos
+
+    // ✅ Ordenar los eventos correctamente
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
 
-    let horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
-
-    let eventoSiguiente = eventos.find(e => e.hora > horaInicioProyecto);
-    let diferencia = eventoSiguiente ? calcularDiferenciaMinutos(horaFinProyecto, eventoSiguiente.hora) : null;
-
-    if (diferencia !== null) {
-        diferenciasMinutos.push({ inicio: horaFinProyecto, fin: eventoSiguiente.hora, diferencia });
-
-        if (diferencia >= 0) {
-            eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
-        } else {
-            // ✅ Ubicar Fin Permiso Especial y NO Fin Almuerzo
-            let proximoEventoFinal = eventos.find(e => e.tipo === "Fin Permiso Especial");
-            
-            if (proximoEventoFinal) {
-                contadorInterrupciones++; 
-                let inicioProyecto1 = proximoEventoFinal.hora;
-                eventos.push({ hora: inicioProyecto1, tipo: `Inicio Proyecto ${contadorInterrupciones}` });
-
-                let finProyecto1 = sumarMinutos(inicioProyecto1, Math.abs(diferencia));
-                eventos.push({ hora: finProyecto1, tipo: `Fin Proyecto ${contadorInterrupciones}` });
-
-                let eventoSiguiente2 = eventos.find(e => e.hora > finProyecto1);
-                let diferencia2 = eventoSiguiente2 ? calcularDiferenciaMinutos(finProyecto1, eventoSiguiente2.hora) : null;
-
-                if (diferencia2 !== null) {
-                    diferenciasMinutos.push({ inicio: finProyecto1, fin: eventoSiguiente2.hora, diferencia: diferencia2 });
-
-                    if (diferencia2 < 0) {
-                        contadorInterrupciones++;
-                        eventos.push({ hora: eventoSiguiente2.hora, tipo: `Inicio Proyecto ${contadorInterrupciones}` });
-                    }
-                }
-            }
-        }
-    }
-
-    eventos.sort((a, b) => a.hora.localeCompare(b.hora));
-
+    // ✅ Mostrar los eventos en pantalla
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
     nuevoItinerario.style.borderTop = "2px solid black";
     nuevoItinerario.style.paddingTop = "10px";
 
-    let eventosTexto = eventos.map(h =>
-        h.operario
-            ? `${h.hora} (${h.tipo} - ${h.operario})`
-            : `${h.hora} (${h.tipo})`
-    ).join("<br>");
-
-    nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
+    let eventosTexto = eventos.map(h => `${h.hora} (${h.tipo})`).join("<br>");
+    nuevoItinerario.innerHTML = `<h3>📌 Itinerario de Eventos Clave</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
 }
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
