@@ -869,6 +869,7 @@ function generarItinerarioProyecto() {
     let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
     let eventos = [];
     let diferenciasMinutos = []; 
+    let eventoSalida = null; // Guardamos salida aparte
 
     // ✅ Recorrer `detallesOperarios` dinámicamente
     Object.keys(detallesOperarios).forEach(operario => {
@@ -892,7 +893,6 @@ function generarItinerarioProyecto() {
 
             // ✅ Agregar eventos a la lista
             eventos.push({ hora: horaEntrada, tipo: "Entrada", operario });
-            eventos.push({ hora: horaSalida, tipo: "Salida", operario });
 
             if (horaAlmuerzo) {
                 eventos.push({ hora: horaAlmuerzo, tipo: "Almuerzo", operario });
@@ -903,14 +903,22 @@ function generarItinerarioProyecto() {
                 eventos.push({ hora: permisoEspecial, tipo: "Permiso Especial", operario });
                 if (horaFinPermisoEspecial) eventos.push({ hora: horaFinPermisoEspecial, tipo: "Fin Permiso Especial", operario });
             }
+
+            // ✅ Guardamos `Salida` pero NO la agregamos aún
+            eventoSalida = { hora: horaSalida, tipo: "Salida", operario };
         });
     });
 
     // ✅ Agregar inicio del proyecto
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
 
-    // ✅ Ordenar eventos correctamente
+    // ✅ Ordenar eventos **sin incluir `Salida`**
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
+
+    // ✅ Agregar `Salida` al final
+    if (eventoSalida) {
+        eventos.push(eventoSalida);
+    }
 
     // ✅ Mostrar eventos en pantalla
     let nuevoItinerario = document.createElement("div");
@@ -927,6 +935,7 @@ function generarItinerarioProyecto() {
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
