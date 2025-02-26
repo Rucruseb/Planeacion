@@ -932,8 +932,8 @@ function generarItinerarioProyecto() {
         }
     });
 
-    // ✅ Llamar a la función `verificarError()` para validar `Fin Proyecto`
-    horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer);
+    // ✅ Llamar a la función `verificarError()`
+    horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos);
 
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
@@ -951,7 +951,7 @@ function generarItinerarioProyecto() {
 }
 
 /** ✅ Función independiente para verificar errores y actualizar `Fin Proyecto` */
-function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer) {
+function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos) {
     let errorDetectado = false;
     let errorIndice = null;
     let nuevaHoraFinProyecto = horaFinProyecto;
@@ -959,7 +959,7 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
     eventosSiguientes.forEach((evento, index) => {
         if (horaFinProyecto > evento.hora && !errorDetectado) {
             errorDetectado = true;
-            errorIndice = index + 1; // Guardamos el índice del error
+            errorIndice = index + 1;
         }
     });
 
@@ -975,7 +975,7 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
         let eventoFinSiguienteError = eventosFinSiguientes[errorIndice - 1];
 
         if (eventoSiguienteError && eventoFinSiguienteError) {
-            let duracionError = calcularDiferenciaMinutos(eventoSiguienteError.hora, eventoFinSiguienteError.hora);
+            let duracionError = Math.abs(calcularDiferenciaMinutos(eventoSiguienteError.hora, eventoFinSiguienteError.hora));
 
             let duracionErrorDiv = document.createElement("div");
             duracionErrorDiv.style.marginTop = "15px";
@@ -984,12 +984,16 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
             duracionErrorDiv.innerHTML = `<h3>⏳ Duración entre Evento Siguiente ${errorIndice} y Evento Fin Siguiente ${errorIndice}: ${duracionError} min</h3>`;
             restriccionesContainer.appendChild(duracionErrorDiv);
 
-            // ✅ **Actualizar `Fin Proyecto` con la nueva duración acumulada**
-            nuevaHoraFinProyecto = sumarMinutos(eventoFinSiguienteError.hora, duracionError);
+            // ✅ **Actualizar `Fin Proyecto` en la lista de eventos**
+            nuevaHoraFinProyecto = sumarMinutos(horaFinProyecto, duracionError);
+            let indexFinProyecto = eventos.findIndex(e => e.tipo === "Fin Proyecto");
+            if (indexFinProyecto !== -1) {
+                eventos[indexFinProyecto].hora = nuevaHoraFinProyecto;
+            }
         }
     }
 
-    return nuevaHoraFinProyecto; // Devolvemos el nuevo valor de `Fin Proyecto`
+    return nuevaHoraFinProyecto;
 }
 
 
