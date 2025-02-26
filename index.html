@@ -869,9 +869,7 @@ function generarItinerarioProyecto() {
     let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
     let eventos = [];
     let eventoSalida = null;
-    let horaFinProyecto; 
-    let errorDetectado = false;
-    let errorIndice = null;
+    let horaFinProyecto;  
 
     // ✅ Recorrer `detallesOperarios` dinámicamente
     Object.keys(detallesOperarios).forEach(operario => {
@@ -934,13 +932,8 @@ function generarItinerarioProyecto() {
         }
     });
 
-    // ✅ Verificar si `Fin Proyecto` es mayor que algún `Evento Siguiente i`
-    eventosSiguientes.forEach((evento, index) => {
-        if (horaFinProyecto > evento.hora && !errorDetectado) {
-            errorDetectado = true;
-            errorIndice = index + 1; // Guardamos el índice del error
-        }
-    });
+    // ✅ Llamar a la función `verificarError()`
+    verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer);
 
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
@@ -955,26 +948,20 @@ function generarItinerarioProyecto() {
 
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
+}
 
-    let eventoSiguienteTexto = eventosSiguientes.map((e, index) => 
-        `<span style="color:blue; font-weight:bold;">Evento Siguiente ${index + 1}: ${e.hora} (${e.tipo})</span>`
-    ).join("<br>");
+/** ✅ Función independiente para verificar errores */
+function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer) {
+    let errorDetectado = false;
+    let errorIndice = null;
 
-    let eventoSiguienteDiv = document.createElement("div");
-    eventoSiguienteDiv.style.marginTop = "15px";
-    eventoSiguienteDiv.innerHTML = `<h3>📌 Eventos Siguientes</h3>${eventoSiguienteTexto}`;
-    restriccionesContainer.appendChild(eventoSiguienteDiv);
+    eventosSiguientes.forEach((evento, index) => {
+        if (horaFinProyecto > evento.hora && !errorDetectado) {
+            errorDetectado = true;
+            errorIndice = index + 1; // Guardamos el índice del error
+        }
+    });
 
-    let eventoFinSiguienteTexto = eventosFinSiguientes.map((e, index) => 
-        `<span style="color:red; font-weight:bold;">Evento Fin Siguiente ${index + 1}: ${e.hora} (${e.tipo})</span>`
-    ).join("<br>");
-
-    let eventoFinSiguienteDiv = document.createElement("div");
-    eventoFinSiguienteDiv.style.marginTop = "15px";
-    eventoFinSiguienteDiv.innerHTML = `<h3>📌 Eventos Fin Siguientes</h3>${eventoFinSiguienteTexto}`;
-    restriccionesContainer.appendChild(eventoFinSiguienteDiv);
-
-    // ✅ Si hay error, mostrar mensaje y calcular duración entre eventos
     if (errorDetectado) {
         let errorDiv = document.createElement("div");
         errorDiv.style.marginTop = "20px";
@@ -983,7 +970,6 @@ function generarItinerarioProyecto() {
         errorDiv.innerHTML = `<h3>⚠️ ERROR: Fin Proyecto es mayor que Evento Siguiente ${errorIndice}</h3>`;
         restriccionesContainer.appendChild(errorDiv);
 
-        // ✅ Buscar `Evento Fin Siguiente` del mismo índice
         let eventoSiguienteError = eventosSiguientes[errorIndice - 1];
         let eventoFinSiguienteError = eventosFinSiguientes[errorIndice - 1];
 
@@ -999,6 +985,7 @@ function generarItinerarioProyecto() {
         }
     }
 }
+
 
 
 
