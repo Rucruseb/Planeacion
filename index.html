@@ -924,6 +924,13 @@ function generarItinerarioProyecto() {
         eventos.push(eventoSalida);
     }
 
+    // ✅ Buscar "Evento Siguiente i"
+    let indexInicioProyecto = eventos.findIndex(e => e.hora === horaInicioProyecto);
+    let eventosSiguientes = eventos
+        .slice(indexInicioProyecto + 1) // Tomamos solo los eventos después de `Inicio Proyecto`
+        .filter(e => e.tipo !== "Fin Proyecto") // Excluimos "Fin Proyecto"
+        .map((e, index) => ({ numero: index + 1, hora: e.hora, tipo: e.tipo }));
+
     // ✅ Mostrar eventos en pantalla
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
@@ -938,6 +945,16 @@ function generarItinerarioProyecto() {
 
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
+
+    // ✅ Mostrar "Evento Siguiente i" en color diferente
+    let eventoSiguienteTexto = eventosSiguientes.map(e => 
+        `<span style="color:blue; font-weight:bold;">Evento Siguiente ${e.numero}: ${e.hora} (${e.tipo})</span>`
+    ).join("<br>");
+
+    let eventoSiguienteDiv = document.createElement("div");
+    eventoSiguienteDiv.style.marginTop = "15px";
+    eventoSiguienteDiv.innerHTML = `<h3>📌 Eventos Siguientes</h3>${eventoSiguienteTexto}`;
+    restriccionesContainer.appendChild(eventoSiguienteDiv);
 }
 
 
