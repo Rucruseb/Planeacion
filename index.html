@@ -851,10 +851,16 @@ document.addEventListener("DOMContentLoaded", function () {
      
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-let contadorErrores = 0; // Se inicializa en 0 y aumenta con cada ejecución de verificarError()
+let contadorErrores = 0; // Se reiniciará en cada ejecución de generarItinerarioProyecto()
 
 function generarItinerarioProyecto() {
     let restriccionesContainer = document.getElementById("restriccionesContainer");
+
+    // 🔹 Reiniciar contador de errores para evitar acumulaciones
+    contadorErrores = 0;
+    
+    // 🔹 Borrar contenido anterior del contenedor para evitar acumulaciones
+    restriccionesContainer.innerHTML = "";
 
     let fechaInicioInput = document.getElementById("fechaInicio").value;
     if (!fechaInicioInput) {
@@ -999,9 +1005,10 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
         
 /** ✅ Función independiente `nuevoAnalisis()` */
 function nuevoAnalisis(eventosSiguientes, restriccionesContainer) {
+    // 🔹 Si no hay eventos siguientes, terminar la ejecución
     if (!eventosSiguientes || eventosSiguientes.length === 0) return;
 
-    // ✅ Verificamos que `contadorErrores` esté dentro del rango
+    // 🔹 Verificar que `contadorErrores` no supere la cantidad de eventos disponibles
     if (contadorErrores >= eventosSiguientes.length) {
         let noEventoDiv = document.createElement("div");
         noEventoDiv.style.marginTop = "15px";
@@ -1012,7 +1019,7 @@ function nuevoAnalisis(eventosSiguientes, restriccionesContainer) {
         return;
     }
 
-    // ✅ Calculamos el evento correcto
+    // 🔹 Obtener el evento siguiente correcto
     let eventoSiguienteN = eventosSiguientes[contadorErrores];
 
     let analisisDiv = document.createElement("div");
@@ -1022,10 +1029,9 @@ function nuevoAnalisis(eventosSiguientes, restriccionesContainer) {
     analisisDiv.innerHTML = `<h3>📌 Evento Siguiente ${contadorErrores + 2}: ${eventoSiguienteN.hora} (${eventoSiguienteN.tipo})</h3>`;
     restriccionesContainer.appendChild(analisisDiv);
 
-    // ✅ **Aumentamos `contadorErrores` al final, después de leer correctamente `eventosSiguientes`**
+    // 🔹 **Incrementamos `contadorErrores` solo dentro de esta ejecución**
     contadorErrores++;
 }
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
