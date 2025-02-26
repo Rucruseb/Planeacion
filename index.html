@@ -851,22 +851,8 @@ document.addEventListener("DOMContentLoaded", function () {
      
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-let contadorErrores = 0; // Se reiniciará en cada ejecución de generarItinerarioProyecto()
-
 function generarItinerarioProyecto() {
     let restriccionesContainer = document.getElementById("restriccionesContainer");
-
-    // 🔹 Asegurar que el contenedor existe antes de modificarlo
-    if (!restriccionesContainer) {
-        console.error("❌ Error: restriccionesContainer no encontrado en el DOM.");
-        return;
-    }
-
-    // 🔹 Reiniciar contador de errores para evitar acumulaciones
-    contadorErrores = 0;
-
-    // 🔹 Borrar contenido anterior del contenedor para evitar acumulaciones
-    restriccionesContainer.innerHTML = "";
 
     let fechaInicioInput = document.getElementById("fechaInicio").value;
     if (!fechaInicioInput) {
@@ -884,7 +870,7 @@ function generarItinerarioProyecto() {
     let eventos = [];
     let eventoSalida = null;
     let horaFinProyecto;  
-    let horaSalida = null;
+    let horaSalida = null; // Variable para almacenar la hora de salida
 
     // ✅ Recorrer `detallesOperarios` dinámicamente
     Object.keys(detallesOperarios).forEach(operario => {
@@ -896,7 +882,7 @@ function generarItinerarioProyecto() {
             if (!datos || !datos.horaEntrada || !datos.horaSalida) return;
 
             let horaEntrada = datos.horaEntrada;
-            horaSalida = datos.horaSalida;
+            horaSalida = datos.horaSalida; // Guardamos la hora de salida
             let horaAlmuerzo = datos.horarioAlmuerzo;
             let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
             let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
@@ -934,7 +920,6 @@ function generarItinerarioProyecto() {
     }
 
     let indexInicioProyecto = eventos.findIndex(e => e.hora === horaInicioProyecto);
-
     let eventosSiguientes = [];
     let eventosFinSiguientes = [];
 
@@ -948,18 +933,9 @@ function generarItinerarioProyecto() {
         }
     });
 
-    // ✅ 🔹 Asegurar que el itinerario se imprime antes de verificar errores
-    imprimirItinerario(eventos, restriccionesContainer);
-
     // ✅ Llamar a la función `verificarError()`
     horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida);
 
-    // ✅ Llamar a `nuevoAnalisis()` después de verificar errores
-    nuevoAnalisis(eventosSiguientes, restriccionesContainer);
-}
-
-/** ✅ Función para imprimir el itinerario */
-function imprimirItinerario(eventos, restriccionesContainer) {
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
     nuevoItinerario.style.borderTop = "2px solid black";
@@ -973,13 +949,9 @@ function imprimirItinerario(eventos, restriccionesContainer) {
 
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
-
-    console.log("✅ Itinerario generado correctamente.");
 }
 
-
-
-        
+/** ✅ Función independiente para verificar errores y actualizar `Fin Proyecto` */
 function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida) {
     let errorDetectado = false;
     let errorIndice = null;
@@ -1032,38 +1004,6 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
     return nuevaHoraFinProyecto;
 }
 
-
-
-        
-/** ✅ Función independiente `nuevoAnalisis()` */
-function nuevoAnalisis(eventosSiguientes, restriccionesContainer) {
-    // 🔹 Si no hay eventos siguientes, terminar la ejecución
-    if (!eventosSiguientes || eventosSiguientes.length === 0) return;
-
-    // 🔹 Verificar que `contadorErrores` no supere la cantidad de eventos disponibles
-    if (contadorErrores >= eventosSiguientes.length) {
-        let noEventoDiv = document.createElement("div");
-        noEventoDiv.style.marginTop = "15px";
-        noEventoDiv.style.color = "gray";
-        noEventoDiv.style.fontWeight = "bold";
-        noEventoDiv.innerHTML = `<h3>📌 No hay más eventos siguientes disponibles.</h3>`;
-        restriccionesContainer.appendChild(noEventoDiv);
-        return;
-    }
-
-    // 🔹 Obtener el evento siguiente correcto
-    let eventoSiguienteN = eventosSiguientes[contadorErrores];
-
-    let analisisDiv = document.createElement("div");
-    analisisDiv.style.marginTop = "15px";
-    analisisDiv.style.color = "green";
-    analisisDiv.style.fontWeight = "bold";
-    analisisDiv.innerHTML = `<h3>📌 Evento Siguiente ${contadorErrores + 2}: ${eventoSiguienteN.hora} (${eventoSiguienteN.tipo})</h3>`;
-    restriccionesContainer.appendChild(analisisDiv);
-
-    // 🔹 **Incrementamos `contadorErrores` solo dentro de esta ejecución**
-    contadorErrores++;
-}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
