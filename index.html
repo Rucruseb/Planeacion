@@ -923,7 +923,6 @@ function generarItinerarioProyecto() {
 
     let indexInicioProyecto = eventos.findIndex(e => e.hora === horaInicioProyecto);
 
-    // ✅ **Actualizar eventosSiguientes antes de cada ejecución**
     let eventosSiguientes = [];
     let eventosFinSiguientes = [];
 
@@ -940,24 +939,9 @@ function generarItinerarioProyecto() {
     // ✅ Llamar a la función `verificarError()`
     horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida);
 
-    // ✅ Llamar a `nuevoAnalisis()`
+    // ✅ Llamar a `nuevoAnalisis()` después de verificar errores
     nuevoAnalisis(eventosSiguientes, restriccionesContainer);
-
-    let nuevoItinerario = document.createElement("div");
-    nuevoItinerario.style.marginTop = "20px";
-    nuevoItinerario.style.borderTop = "2px solid black";
-    nuevoItinerario.style.paddingTop = "10px";
-
-    let eventosTexto = eventos.map(h =>
-        h.operario
-            ? `${h.hora} (${h.tipo} - ${h.operario})`
-            : `${h.hora} (${h.tipo})`
-    ).join("<br>");
-
-    nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
-    restriccionesContainer.appendChild(nuevoItinerario);
 }
-
 function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida) {
     let errorDetectado = false;
     let errorIndice = null;
@@ -1015,10 +999,9 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
         
 /** ✅ Función independiente `nuevoAnalisis()` */
 function nuevoAnalisis(eventosSiguientes, restriccionesContainer) {
-    // ✅ Verificamos que `eventosSiguientes` esté actualizado
     if (!eventosSiguientes || eventosSiguientes.length === 0) return;
 
-    // ✅ Verificamos que `contadorErrores` no sea mayor al tamaño de `eventosSiguientes`
+    // ✅ Verificamos que `contadorErrores` esté dentro del rango
     if (contadorErrores >= eventosSiguientes.length) {
         let noEventoDiv = document.createElement("div");
         noEventoDiv.style.marginTop = "15px";
@@ -1029,18 +1012,17 @@ function nuevoAnalisis(eventosSiguientes, restriccionesContainer) {
         return;
     }
 
-    // ✅ Calculamos el siguiente evento en la secuencia
+    // ✅ Calculamos el evento correcto
     let eventoSiguienteN = eventosSiguientes[contadorErrores];
 
-    // ✅ Mostramos `eventoSiguiente(1+n)`
     let analisisDiv = document.createElement("div");
     analisisDiv.style.marginTop = "15px";
     analisisDiv.style.color = "green";
     analisisDiv.style.fontWeight = "bold";
-    analisisDiv.innerHTML = `<h3>📌 Evento Siguiente ${contadorErrores + 1}: ${eventoSiguienteN.hora} (${eventoSiguienteN.tipo})</h3>`;
+    analisisDiv.innerHTML = `<h3>📌 Evento Siguiente ${contadorErrores + 2}: ${eventoSiguienteN.hora} (${eventoSiguienteN.tipo})</h3>`;
     restriccionesContainer.appendChild(analisisDiv);
 
-    // ✅ **Aumentamos `contadorErrores` solo después de haber accedido correctamente a `eventosSiguientes`**
+    // ✅ **Aumentamos `contadorErrores` al final, después de leer correctamente `eventosSiguientes`**
     contadorErrores++;
 }
 
