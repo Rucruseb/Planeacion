@@ -924,12 +924,20 @@ function generarItinerarioProyecto() {
         eventos.push(eventoSalida);
     }
 
-    // ✅ Buscar "Evento Siguiente i"
+    // ✅ Buscar "Evento Siguiente i" y "Evento Fin Siguiente i"
     let indexInicioProyecto = eventos.findIndex(e => e.hora === horaInicioProyecto);
-    let eventosSiguientes = eventos
-        .slice(indexInicioProyecto + 1) // Tomamos solo los eventos después de `Inicio Proyecto`
-        .filter(e => e.tipo !== "Fin Proyecto") // Excluimos "Fin Proyecto"
-        .map((e, index) => ({ numero: index + 1, hora: e.hora, tipo: e.tipo }));
+    let eventosSiguientes = [];
+    let eventosFinSiguientes = [];
+
+    eventos.slice(indexInicioProyecto + 1).forEach(e => {
+        if (e.tipo !== "Fin Proyecto") {
+            if (["Fin Almuerzo", "Fin Permiso Especial", "Salida"].includes(e.tipo)) {
+                eventosFinSiguientes.push(e); // Eventos finales
+            } else {
+                eventosSiguientes.push(e); // Eventos normales
+            }
+        }
+    });
 
     // ✅ Mostrar eventos en pantalla
     let nuevoItinerario = document.createElement("div");
@@ -946,16 +954,27 @@ function generarItinerarioProyecto() {
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
 
-    // ✅ Mostrar "Evento Siguiente i" en color diferente
-    let eventoSiguienteTexto = eventosSiguientes.map(e => 
-        `<span style="color:blue; font-weight:bold;">Evento Siguiente ${e.numero}: ${e.hora} (${e.tipo})</span>`
+    // ✅ Mostrar "Evento Siguiente i" en color azul
+    let eventoSiguienteTexto = eventosSiguientes.map((e, index) => 
+        `<span style="color:blue; font-weight:bold;">Evento Siguiente ${index + 1}: ${e.hora} (${e.tipo})</span>`
     ).join("<br>");
 
     let eventoSiguienteDiv = document.createElement("div");
     eventoSiguienteDiv.style.marginTop = "15px";
     eventoSiguienteDiv.innerHTML = `<h3>📌 Eventos Siguientes</h3>${eventoSiguienteTexto}`;
     restriccionesContainer.appendChild(eventoSiguienteDiv);
+
+    // ✅ Mostrar "Evento Fin Siguiente i" en color rojo
+    let eventoFinSiguienteTexto = eventosFinSiguientes.map((e, index) => 
+        `<span style="color:red; font-weight:bold;">Evento Fin Siguiente ${index + 1}: ${e.hora} (${e.tipo})</span>`
+    ).join("<br>");
+
+    let eventoFinSiguienteDiv = document.createElement("div");
+    eventoFinSiguienteDiv.style.marginTop = "15px";
+    eventoFinSiguienteDiv.innerHTML = `<h3>📌 Eventos Fin Siguientes</h3>${eventoFinSiguienteTexto}`;
+    restriccionesContainer.appendChild(eventoFinSiguienteDiv);
 }
+
 
 
 
