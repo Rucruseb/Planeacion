@@ -868,9 +868,10 @@ function generarItinerarioProyecto() {
     const cantidad = cantidadInput ? parseFloat(cantidadInput.value) : 0;
     let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
     let eventos = [];
-    let diferenciasMinutos = []; 
-    let eventoSalida = null; // Guardamos salida aparte
-    let horaFinProyecto; // Variable para Fin Proyecto
+    let eventoSalida = null;
+    let horaFinProyecto; 
+    let errorDetectado = false;
+    let errorIndice = null;
 
     // ✅ Recorrer `detallesOperarios` dinámicamente
     Object.keys(detallesOperarios).forEach(operario => {
@@ -881,7 +882,6 @@ function generarItinerarioProyecto() {
 
             if (!datos || !datos.horaEntrada || !datos.horaSalida) return;
 
-            // ✅ Definir eventos clave correctamente
             let horaEntrada = datos.horaEntrada;
             let horaSalida = datos.horaSalida;
             let horaAlmuerzo = datos.horarioAlmuerzo;
@@ -892,7 +892,6 @@ function generarItinerarioProyecto() {
             let duracionPermisoEspecial = datos.horariosExtras ? parseInt(datos.horariosExtras[0].duracion) : 0;
             let horaFinPermisoEspecial = permisoEspecial ? sumarMinutos(permisoEspecial, duracionPermisoEspecial) : null;
 
-            // ✅ Agregar eventos a la lista
             eventos.push({ hora: horaEntrada, tipo: "Entrada", operario });
 
             if (horaAlmuerzo) {
@@ -905,27 +904,22 @@ function generarItinerarioProyecto() {
                 if (horaFinPermisoEspecial) eventos.push({ hora: horaFinPermisoEspecial, tipo: "Fin Permiso Especial", operario });
             }
 
-            // ✅ Guardamos `Salida` pero NO la agregamos aún
             eventoSalida = { hora: horaSalida, tipo: "Salida", operario };
         });
     });
 
-    // ✅ Agregar inicio del proyecto
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
 
     // ✅ Calcular `Fin Proyecto`
     horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
     eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
 
-    // ✅ Ordenar eventos **sin incluir `Salida`**
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
 
-    // ✅ Agregar `Salida` al final
     if (eventoSalida) {
         eventos.push(eventoSalida);
     }
 
-    // ✅ Buscar "Evento Siguiente i" y "Evento Fin Siguiente i"
     let indexInicioProyecto = eventos.findIndex(e => e.hora === horaInicioProyecto);
     let eventosSiguientes = [];
     let eventosFinSiguientes = [];
@@ -933,23 +927,21 @@ function generarItinerarioProyecto() {
     eventos.slice(indexInicioProyecto + 1).forEach(e => {
         if (e.tipo !== "Fin Proyecto") {
             if (["Fin Almuerzo", "Fin Permiso Especial", "Salida"].includes(e.tipo)) {
-                eventosFinSiguientes.push(e); // Eventos finales
+                eventosFinSiguientes.push(e);
             } else {
-                eventosSiguientes.push(e); // Eventos normales
+                eventosSiguientes.push(e);
             }
         }
     });
 
-    // ✅ Verificar si `Fin Proyecto` es mayor que `Evento Siguiente 1`
-    let errorDetectado = false;
-    if (eventosSiguientes.length > 0) {
-        let eventoSiguiente1 = eventosSiguientes[0]; // Primer evento siguiente
-        if (horaFinProyecto > eventoSiguiente1.hora) {
+    // ✅ Verificar si `Fin Proyecto` es mayor que algún `Evento Siguiente i`
+    eventosSiguientes.forEach((evento, index) => {
+        if (horaFinProyecto > evento.hora && !errorDetectado) {
             errorDetectado = true;
+            errorIndice = index + 1; // Guardamos el índice del error
         }
-    }
+    });
 
-    // ✅ Mostrar eventos en pantalla
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
     nuevoItinerario.style.borderTop = "2px solid black";
@@ -964,7 +956,6 @@ function generarItinerarioProyecto() {
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
 
-    // ✅ Mostrar "Evento Siguiente i" en color azul
     let eventoSiguienteTexto = eventosSiguientes.map((e, index) => 
         `<span style="color:blue; font-weight:bold;">Evento Siguiente ${index + 1}: ${e.hora} (${e.tipo})</span>`
     ).join("<br>");
@@ -974,7 +965,6 @@ function generarItinerarioProyecto() {
     eventoSiguienteDiv.innerHTML = `<h3>📌 Eventos Siguientes</h3>${eventoSiguienteTexto}`;
     restriccionesContainer.appendChild(eventoSiguienteDiv);
 
-    // ✅ Mostrar "Evento Fin Siguiente i" en color rojo
     let eventoFinSiguienteTexto = eventosFinSiguientes.map((e, index) => 
         `<span style="color:red; font-weight:bold;">Evento Fin Siguiente ${index + 1}: ${e.hora} (${e.tipo})</span>`
     ).join("<br>");
@@ -984,14 +974,29 @@ function generarItinerarioProyecto() {
     eventoFinSiguienteDiv.innerHTML = `<h3>📌 Eventos Fin Siguientes</h3>${eventoFinSiguienteTexto}`;
     restriccionesContainer.appendChild(eventoFinSiguienteDiv);
 
-    // ✅ Si hay error, mostrar mensaje en rojo
+    // ✅ Si hay error, mostrar mensaje y calcular duración entre eventos
     if (errorDetectado) {
         let errorDiv = document.createElement("div");
         errorDiv.style.marginTop = "20px";
         errorDiv.style.color = "red";
         errorDiv.style.fontWeight = "bold";
-        errorDiv.innerHTML = `<h3>⚠️ ERROR: Fin Proyecto es mayor que Evento Siguiente 1</h3>`;
+        errorDiv.innerHTML = `<h3>⚠️ ERROR: Fin Proyecto es mayor que Evento Siguiente ${errorIndice}</h3>`;
         restriccionesContainer.appendChild(errorDiv);
+
+        // ✅ Buscar `Evento Fin Siguiente` del mismo índice
+        let eventoSiguienteError = eventosSiguientes[errorIndice - 1];
+        let eventoFinSiguienteError = eventosFinSiguientes[errorIndice - 1];
+
+        if (eventoSiguienteError && eventoFinSiguienteError) {
+            let duracionError = calcularDiferenciaMinutos(eventoSiguienteError.hora, eventoFinSiguienteError.hora);
+
+            let duracionErrorDiv = document.createElement("div");
+            duracionErrorDiv.style.marginTop = "15px";
+            duracionErrorDiv.style.color = "purple";
+            duracionErrorDiv.style.fontWeight = "bold";
+            duracionErrorDiv.innerHTML = `<h3>⏳ Duración entre Evento Siguiente ${errorIndice} y Evento Fin Siguiente ${errorIndice}: ${duracionError} min</h3>`;
+            restriccionesContainer.appendChild(duracionErrorDiv);
+        }
     }
 }
 
