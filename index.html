@@ -870,6 +870,7 @@ function generarItinerarioProyecto() {
     let eventos = [];
     let eventoSalida = null;
     let horaFinProyecto;  
+    let horaSalida = null; // Variable para almacenar la hora de salida
 
     // ✅ Recorrer `detallesOperarios` dinámicamente
     Object.keys(detallesOperarios).forEach(operario => {
@@ -881,7 +882,7 @@ function generarItinerarioProyecto() {
             if (!datos || !datos.horaEntrada || !datos.horaSalida) return;
 
             let horaEntrada = datos.horaEntrada;
-            let horaSalida = datos.horaSalida;
+            horaSalida = datos.horaSalida; // Guardamos la hora de salida
             let horaAlmuerzo = datos.horarioAlmuerzo;
             let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
             let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
@@ -933,7 +934,7 @@ function generarItinerarioProyecto() {
     });
 
     // ✅ Llamar a la función `verificarError()`
-    horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos);
+    horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida);
 
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
@@ -951,7 +952,7 @@ function generarItinerarioProyecto() {
 }
 
 /** ✅ Función independiente para verificar errores y actualizar `Fin Proyecto` */
-function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos) {
+function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida) {
     let errorDetectado = false;
     let errorIndice = null;
     let nuevaHoraFinProyecto = horaFinProyecto;
@@ -984,13 +985,20 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
             duracionErrorDiv.innerHTML = `<h3>⏳ Duración entre Evento Siguiente ${errorIndice} y Evento Fin Siguiente ${errorIndice}: ${duracionError} min</h3>`;
             restriccionesContainer.appendChild(duracionErrorDiv);
 
-            // ✅ **Actualizar `Fin Proyecto` en la lista de eventos**
+            // ✅ **Actualizar `Fin Proyecto` con duración adicional**
             nuevaHoraFinProyecto = sumarMinutos(horaFinProyecto, duracionError);
-            let indexFinProyecto = eventos.findIndex(e => e.tipo === "Fin Proyecto");
-            if (indexFinProyecto !== -1) {
-                eventos[indexFinProyecto].hora = nuevaHoraFinProyecto;
-            }
         }
+    }
+
+    // ✅ **Si `Fin Proyecto` es igual o mayor a `Hora Salida`, adoptamos `Hora Salida`**
+    if (horaSalida && nuevaHoraFinProyecto >= horaSalida) {
+        nuevaHoraFinProyecto = horaSalida;
+    }
+
+    // ✅ **Actualizar `Fin Proyecto` en la lista de eventos**
+    let indexFinProyecto = eventos.findIndex(e => e.tipo === "Fin Proyecto");
+    if (indexFinProyecto !== -1) {
+        eventos[indexFinProyecto].hora = nuevaHoraFinProyecto;
     }
 
     return nuevaHoraFinProyecto;
