@@ -922,6 +922,8 @@ function generarItinerarioProyecto() {
     }
 
     let indexInicioProyecto = eventos.findIndex(e => e.hora === horaInicioProyecto);
+
+    // ✅ **Actualizar eventosSiguientes antes de cada ejecución**
     let eventosSiguientes = [];
     let eventosFinSiguientes = [];
 
@@ -938,7 +940,7 @@ function generarItinerarioProyecto() {
     // ✅ Llamar a la función `verificarError()`
     horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida);
 
-    // ✅ Llamar a la función `nuevoAnalisis()` después de verificar errores
+    // ✅ Llamar a `nuevoAnalisis()`
     nuevoAnalisis(eventosSiguientes, restriccionesContainer);
 
     let nuevoItinerario = document.createElement("div");
@@ -1013,30 +1015,34 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
         
 /** ✅ Función independiente `nuevoAnalisis()` */
 function nuevoAnalisis(eventosSiguientes, restriccionesContainer) {
-    // Aumentamos el contador de errores
-    contadorErrores++;
+    // ✅ Verificamos que `eventosSiguientes` esté actualizado
+    if (!eventosSiguientes || eventosSiguientes.length === 0) return;
 
-    // Calculamos el evento siguiente (1 + n)
-    let eventoSiguienteN = eventosSiguientes[contadorErrores]; 
-
-    // ✅ Si existe `eventoSiguienteN`, mostrarlo en la interfaz
-    if (eventoSiguienteN) {
-        let analisisDiv = document.createElement("div");
-        analisisDiv.style.marginTop = "15px";
-        analisisDiv.style.color = "green";
-        analisisDiv.style.fontWeight = "bold";
-        analisisDiv.innerHTML = `<h3>📌 Evento Siguiente ${contadorErrores + 1}: ${eventoSiguienteN.hora} (${eventoSiguienteN.tipo})</h3>`;
-        restriccionesContainer.appendChild(analisisDiv);
-    } else {
+    // ✅ Verificamos que `contadorErrores` no sea mayor al tamaño de `eventosSiguientes`
+    if (contadorErrores >= eventosSiguientes.length) {
         let noEventoDiv = document.createElement("div");
         noEventoDiv.style.marginTop = "15px";
         noEventoDiv.style.color = "gray";
         noEventoDiv.style.fontWeight = "bold";
         noEventoDiv.innerHTML = `<h3>📌 No hay más eventos siguientes disponibles.</h3>`;
         restriccionesContainer.appendChild(noEventoDiv);
+        return;
     }
-}
 
+    // ✅ Calculamos el siguiente evento en la secuencia
+    let eventoSiguienteN = eventosSiguientes[contadorErrores];
+
+    // ✅ Mostramos `eventoSiguiente(1+n)`
+    let analisisDiv = document.createElement("div");
+    analisisDiv.style.marginTop = "15px";
+    analisisDiv.style.color = "green";
+    analisisDiv.style.fontWeight = "bold";
+    analisisDiv.innerHTML = `<h3>📌 Evento Siguiente ${contadorErrores + 1}: ${eventoSiguienteN.hora} (${eventoSiguienteN.tipo})</h3>`;
+    restriccionesContainer.appendChild(analisisDiv);
+
+    // ✅ **Aumentamos `contadorErrores` solo después de haber accedido correctamente a `eventosSiguientes`**
+    contadorErrores++;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
