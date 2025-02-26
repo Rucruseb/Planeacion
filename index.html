@@ -856,9 +856,15 @@ let contadorErrores = 0; // Se reiniciará en cada ejecución de generarItinerar
 function generarItinerarioProyecto() {
     let restriccionesContainer = document.getElementById("restriccionesContainer");
 
+    // 🔹 Asegurar que el contenedor existe antes de modificarlo
+    if (!restriccionesContainer) {
+        console.error("❌ Error: restriccionesContainer no encontrado en el DOM.");
+        return;
+    }
+
     // 🔹 Reiniciar contador de errores para evitar acumulaciones
     contadorErrores = 0;
-    
+
     // 🔹 Borrar contenido anterior del contenedor para evitar acumulaciones
     restriccionesContainer.innerHTML = "";
 
@@ -942,12 +948,38 @@ function generarItinerarioProyecto() {
         }
     });
 
+    // ✅ 🔹 Asegurar que el itinerario se imprime antes de verificar errores
+    imprimirItinerario(eventos, restriccionesContainer);
+
     // ✅ Llamar a la función `verificarError()`
     horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida);
 
     // ✅ Llamar a `nuevoAnalisis()` después de verificar errores
     nuevoAnalisis(eventosSiguientes, restriccionesContainer);
 }
+
+/** ✅ Función para imprimir el itinerario */
+function imprimirItinerario(eventos, restriccionesContainer) {
+    let nuevoItinerario = document.createElement("div");
+    nuevoItinerario.style.marginTop = "20px";
+    nuevoItinerario.style.borderTop = "2px solid black";
+    nuevoItinerario.style.paddingTop = "10px";
+
+    let eventosTexto = eventos.map(h =>
+        h.operario
+            ? `${h.hora} (${h.tipo} - ${h.operario})`
+            : `${h.hora} (${h.tipo})`
+    ).join("<br>");
+
+    nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
+    restriccionesContainer.appendChild(nuevoItinerario);
+
+    console.log("✅ Itinerario generado correctamente.");
+}
+
+
+
+        
 function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida) {
     let errorDetectado = false;
     let errorIndice = null;
