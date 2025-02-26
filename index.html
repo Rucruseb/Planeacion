@@ -932,8 +932,8 @@ function generarItinerarioProyecto() {
         }
     });
 
-    // ✅ Llamar a la función `verificarError()`
-    verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer);
+    // ✅ Llamar a la función `verificarError()` para validar `Fin Proyecto`
+    horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer);
 
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
@@ -950,10 +950,11 @@ function generarItinerarioProyecto() {
     restriccionesContainer.appendChild(nuevoItinerario);
 }
 
-/** ✅ Función independiente para verificar errores */
+/** ✅ Función independiente para verificar errores y actualizar `Fin Proyecto` */
 function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer) {
     let errorDetectado = false;
     let errorIndice = null;
+    let nuevaHoraFinProyecto = horaFinProyecto;
 
     eventosSiguientes.forEach((evento, index) => {
         if (horaFinProyecto > evento.hora && !errorDetectado) {
@@ -982,10 +983,14 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
             duracionErrorDiv.style.fontWeight = "bold";
             duracionErrorDiv.innerHTML = `<h3>⏳ Duración entre Evento Siguiente ${errorIndice} y Evento Fin Siguiente ${errorIndice}: ${duracionError} min</h3>`;
             restriccionesContainer.appendChild(duracionErrorDiv);
+
+            // ✅ **Actualizar `Fin Proyecto` con la nueva duración acumulada**
+            nuevaHoraFinProyecto = sumarMinutos(eventoFinSiguienteError.hora, duracionError);
         }
     }
-}
 
+    return nuevaHoraFinProyecto; // Devolvemos el nuevo valor de `Fin Proyecto`
+}
 
 
 
