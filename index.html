@@ -870,6 +870,7 @@ function generarItinerarioProyecto() {
     let eventos = [];
     let diferenciasMinutos = []; 
     let eventoSalida = null; // Guardamos salida aparte
+    let horaFinProyecto; // Variable para Fin Proyecto
 
     // ✅ Recorrer `detallesOperarios` dinámicamente
     Object.keys(detallesOperarios).forEach(operario => {
@@ -913,7 +914,7 @@ function generarItinerarioProyecto() {
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
 
     // ✅ Calcular `Fin Proyecto`
-    let horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
+    horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
     eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
 
     // ✅ Ordenar eventos **sin incluir `Salida`**
@@ -938,6 +939,15 @@ function generarItinerarioProyecto() {
             }
         }
     });
+
+    // ✅ Verificar si `Fin Proyecto` es mayor que `Evento Siguiente 1`
+    let errorDetectado = false;
+    if (eventosSiguientes.length > 0) {
+        let eventoSiguiente1 = eventosSiguientes[0]; // Primer evento siguiente
+        if (horaFinProyecto > eventoSiguiente1.hora) {
+            errorDetectado = true;
+        }
+    }
 
     // ✅ Mostrar eventos en pantalla
     let nuevoItinerario = document.createElement("div");
@@ -973,6 +983,16 @@ function generarItinerarioProyecto() {
     eventoFinSiguienteDiv.style.marginTop = "15px";
     eventoFinSiguienteDiv.innerHTML = `<h3>📌 Eventos Fin Siguientes</h3>${eventoFinSiguienteTexto}`;
     restriccionesContainer.appendChild(eventoFinSiguienteDiv);
+
+    // ✅ Si hay error, mostrar mensaje en rojo
+    if (errorDetectado) {
+        let errorDiv = document.createElement("div");
+        errorDiv.style.marginTop = "20px";
+        errorDiv.style.color = "red";
+        errorDiv.style.fontWeight = "bold";
+        errorDiv.innerHTML = `<h3>⚠️ ERROR: Fin Proyecto es mayor que Evento Siguiente 1</h3>`;
+        restriccionesContainer.appendChild(errorDiv);
+    }
 }
 
 
