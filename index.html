@@ -1065,9 +1065,10 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
         console.log(`6. Evento Siguiente ${i + 1} = ${eventoSiguiente.hora} (${eventoSiguiente.tipo})`);
         console.log(`7. Evento Fin Siguiente ${i + 1} = ${eventoFinSiguiente.hora} (${eventoFinSiguiente.tipo})`);
 
-        let duracionEntreEventos = calcularDiferenciaMinutos(eventoSiguiente.hora, eventoFinSiguiente.hora);
+        // ✅ Se ha corregido la resta para evitar valores negativos
+        let duracionEntreEventos = calcularDiferenciaMinutos(eventoFinSiguiente.hora, eventoSiguiente.hora);
 
-        console.log(`8. Duración entre eventos (${eventoSiguiente.hora} - ${eventoFinSiguiente.hora}) = ${duracionEntreEventos} min`);
+        console.log(`8. Duración entre eventos (${eventoFinSiguiente.hora} - ${eventoSiguiente.hora}) = ${duracionEntreEventos} min`);
 
         let proyectoFinCalculado = sumarMinutos(proyectoFinOriginal, duracionEntreEventos);
 
