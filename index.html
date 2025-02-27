@@ -1068,7 +1068,7 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
         // ✅ Se ha corregido la resta para evitar valores negativos
         let duracionEntreEventos = calcularDiferenciaMinutos(eventoFinSiguiente.hora, eventoSiguiente.hora);
 
-        console.log(`8. Duración entre eventos (${eventoFinSiguientes[i].hora} - ${eventoSiguientes[i].hora}) = ${duracionEntreEventos} min`);
+        console.log(`8. Duración entre eventos (${eventoFinSiguiente.hora} - ${eventoSiguiente.hora}) = ${duracionEntreEventos} min`);
 
         let proyectoFinCalculado = sumarMinutos(proyectoFinOriginal, duracionEntreEventos);
 
@@ -1079,14 +1079,6 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
             console.log(`✅ Coincidencia encontrada en Evento Siguiente ${i + 1}`);
             mostrarMensaje(`📌 Se determinó que estamos en Evento Siguiente ${i + 1}`, restriccionesContainer);
             encontrado = true;
-
-            // 🔹 **Buscar el Evento Siguiente i+1 y mostrar su valor en la consola**
-            if (i + 1 < eventosSiguientes.length) {
-                let eventoSiguienteProximo = eventosSiguientes[i + 1];
-                console.log(`📌 Evento Siguiente ${i + 2} = ${eventoSiguienteProximo.hora} (${eventoSiguienteProximo.tipo})`);
-            } else {
-                console.log("📌 No hay más eventos siguientes después de este.");
-            }
             break;
         } else {
             console.log(`🚨 No coincidió con Proyecto Fin en el Itinerario.`);
@@ -1107,8 +1099,6 @@ function mostrarMensaje(mensaje, restriccionesContainer) {
     mensajeDiv.innerHTML = `<h3>${mensaje}</h3>`;
     restriccionesContainer.appendChild(mensajeDiv);
 }
-
-
 
 
 
