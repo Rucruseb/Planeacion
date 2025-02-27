@@ -1001,17 +1001,19 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
         eventos[indexFinProyecto].hora = nuevaHoraFinProyecto;
     }
 
-    return nuevaHoraFinProyecto;
+nuevoAnalisis(eventos, restriccionesContainer);
+return nuevaHoraFinProyecto;
 
-    nuevoAnalisis(eventos, restriccionesContainer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function nuevoAnalisis(eventos, restriccionesContainer) {
+    console.log("🔎 Ejecutando nuevoAnalisis()");
+
     let inicioProyecto = eventos.find(e => e.tipo.includes("Inicio Proyecto"))?.hora;
     let proyectoFinEnItinerario = eventos.find(e => e.tipo === "Fin Proyecto")?.hora;
-    
+
     if (!inicioProyecto || !proyectoFinEnItinerario) {
         console.warn("⚠️ No se encontró un inicio de proyecto o un fin de proyecto válido.");
         return;
@@ -1031,7 +1033,7 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
 
     let eventosSiguientes = eventos.filter(e => e.hora > inicioProyecto && e.tipo !== "Fin Proyecto");
     let eventosFinSiguientes = eventos.filter(e => ["Fin Almuerzo", "Fin Permiso Especial", "Salida"].includes(e.tipo));
-    
+
     if (eventosSiguientes.length === 0) {
         mostrarMensaje("📌 No hay más eventos siguientes", restriccionesContainer);
         return;
@@ -1043,12 +1045,12 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
         let eventoFinSiguiente = eventosFinSiguientes[i];
 
         if (!eventoFinSiguiente) continue;
-        
+
         let duracionEntreEventos = calcularDiferenciaMinutos(eventoSiguiente.hora, eventoFinSiguiente.hora);
         let proyectoFinCalculado = sumarMinutos(proyectoFinOriginal, duracionEntreEventos);
-        
+
         if (proyectoFinCalculado === proyectoFinEnItinerario) {
-            mostrarMensaje(`📌 Evento Siguiente ${i + 1}`, restriccionesContainer);
+            mostrarMensaje(`📌 Se determinó que estamos en Evento Siguiente ${i + 1}`, restriccionesContainer);
             encontrado = true;
             break;
         }
@@ -1058,6 +1060,7 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
         mostrarMensaje("📌 No hay coincidencia con eventos siguientes", restriccionesContainer);
     }
 }
+
 
 function mostrarMensaje(mensaje, restriccionesContainer) {
     let mensajeDiv = document.createElement("div");
