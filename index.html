@@ -1053,6 +1053,8 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
     }
 
     let encontrado = false;
+    let eventoSiguienteProximo = null;
+
     for (let i = 0; i < eventosSiguientes.length; i++) {
         let eventoSiguiente = eventosSiguientes[i];
         let eventoFinSiguiente = eventosFinSiguientes[i];
@@ -1079,7 +1081,7 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
             mostrarMensaje(`📌 Se determinó que estamos en Evento Siguiente ${i + 1}`, restriccionesContainer);
 
             // 🔹 **Buscar el siguiente evento normal (ignorar eventos finales)**
-            let eventoSiguienteProximo = eventosSiguientes.slice(i + 1).find(e => !["Fin Almuerzo", "Fin Permiso Especial", "Salida"].includes(e.tipo));
+            eventoSiguienteProximo = eventosSiguientes.slice(i + 1).find(e => !["Fin Almuerzo", "Fin Permiso Especial", "Salida"].includes(e.tipo));
 
             if (eventoSiguienteProximo) {
                 console.log(`📌 Evento Siguiente ${i + 2} = ${eventoSiguienteProximo.hora} (${eventoSiguienteProximo.tipo})`);
@@ -1098,6 +1100,18 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
         console.log("❌ No se encontró ninguna coincidencia con eventos siguientes.");
         mostrarMensaje("📌 No hay coincidencia con eventos siguientes", restriccionesContainer);
     }
+
+    // 🔹 **Comparación entre Proyecto Fin en el Itinerario y Evento Siguiente i+1**
+    if (eventoSiguienteProximo) {
+        console.log("🔍 Comparando Proyecto Fin en el Itinerario con Evento Siguiente i+1...");
+        if (proyectoFinEnItinerario > eventoSiguienteProximo.hora) {
+            console.log("📌 Proyecto Fin en el Itinerario ocurre después de Evento Siguiente i+1.");
+        } else if (proyectoFinEnItinerario < eventoSiguienteProximo.hora) {
+            console.log("📌 Evento Siguiente i+1 ocurre después de Proyecto Fin en el Itinerario.");
+        } else {
+            console.log("📌 Proyecto Fin en el Itinerario y Evento Siguiente i+1 ocurren al mismo tiempo.");
+        }
+    }
 }
 
 function mostrarMensaje(mensaje, restriccionesContainer) {
@@ -1108,11 +1122,6 @@ function mostrarMensaje(mensaje, restriccionesContainer) {
     mensajeDiv.innerHTML = `<h3>${mensaje}</h3>`;
     restriccionesContainer.appendChild(mensajeDiv);
 }
-
-
-
-
-
 
 
         
