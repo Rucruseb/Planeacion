@@ -1065,7 +1065,6 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
         console.log(`6. Evento Siguiente ${i + 1} = ${eventoSiguiente.hora} (${eventoSiguiente.tipo})`);
         console.log(`7. Evento Fin Siguiente ${i + 1} = ${eventoFinSiguiente.hora} (${eventoFinSiguiente.tipo})`);
 
-        // ✅ Se ha corregido la resta para evitar valores negativos
         let duracionEntreEventos = calcularDiferenciaMinutos(eventoFinSiguiente.hora, eventoSiguiente.hora);
 
         console.log(`8. Duración entre eventos (${eventoFinSiguiente.hora} - ${eventoSiguiente.hora}) = ${duracionEntreEventos} min`);
@@ -1078,8 +1077,18 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
         if (proyectoFinCalculado === proyectoFinEnItinerario) {
             console.log(`✅ Coincidencia encontrada en Evento Siguiente ${i + 1}`);
             mostrarMensaje(`📌 Se determinó que estamos en Evento Siguiente ${i + 1}`, restriccionesContainer);
+
+            // 🔹 **Antes de salir del bucle, encontrar Evento Siguiente i+1**
+            let eventoSiguienteProximo = eventosSiguientes[i + 1];
+
+            if (eventoSiguienteProximo) {
+                console.log(`📌 Evento Siguiente ${i + 2} = ${eventoSiguienteProximo.hora} (${eventoSiguienteProximo.tipo})`);
+            } else {
+                console.log("📌 No hay más eventos siguientes después de este.");
+            }
+
             encontrado = true;
-            break;
+            break; // Salimos solo después de encontrar y mostrar Evento Siguiente i+1
         } else {
             console.log(`🚨 No coincidió con Proyecto Fin en el Itinerario.`);
         }
@@ -1099,8 +1108,6 @@ function mostrarMensaje(mensaje, restriccionesContainer) {
     mensajeDiv.innerHTML = `<h3>${mensaje}</h3>`;
     restriccionesContainer.appendChild(mensajeDiv);
 }
-
-
 
 
 
