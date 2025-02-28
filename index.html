@@ -1078,8 +1078,8 @@ function nuevoAnalisis(eventos, restriccionesContainer) {
             console.log(`✅ Coincidencia encontrada en Evento Siguiente ${i + 1}`);
             mostrarMensaje(`📌 Se determinó que estamos en Evento Siguiente ${i + 1}`, restriccionesContainer);
 
-            // 🔹 **Antes de salir del bucle, encontrar Evento Siguiente i+1**
-            let eventoSiguienteProximo = eventosSiguientes[i + 1];
+            // 🔹 **Buscar el siguiente evento normal (ignorar eventos finales)**
+            let eventoSiguienteProximo = eventosSiguientes.slice(i + 1).find(e => !["Fin Almuerzo", "Fin Permiso Especial", "Salida"].includes(e.tipo));
 
             if (eventoSiguienteProximo) {
                 console.log(`📌 Evento Siguiente ${i + 2} = ${eventoSiguienteProximo.hora} (${eventoSiguienteProximo.tipo})`);
