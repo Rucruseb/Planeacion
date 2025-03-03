@@ -852,6 +852,8 @@ document.addEventListener("DOMContentLoaded", function () {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function generarItinerarioProyecto() {
+    console.log("🔎 Iniciando generación del itinerario...");
+
     let restriccionesContainer = document.getElementById("restriccionesContainer");
 
     let fechaInicioInput = document.getElementById("fechaInicio").value;
@@ -869,53 +871,64 @@ function generarItinerarioProyecto() {
     let duracionTotalProyecto = (tiempo / 1000) * cantidad; 
     let eventos = [];
     let eventoSalida = null;
-    let horaFinProyecto;  
+    let horaFinProyecto;
     let horaSalida = null; // Variable para almacenar la hora de salida
 
-   Object.keys(detallesOperarios).forEach(operario => {
-    let fechasOperario = detallesOperarios[operario];
+    console.log("📌 Procesando operarios y sus horarios...");
+    Object.keys(detallesOperarios).forEach(operario => {
+        let fechasOperario = detallesOperarios[operario];
 
-    Object.keys(fechasOperario).forEach(fecha => {
-        let datos = fechasOperario[fecha];
+        Object.keys(fechasOperario).forEach(fecha => {
+            let datos = fechasOperario[fecha];
 
-        if (!datos || !datos.horaEntrada || !datos.horaSalida) return; // Si no hay datos, se omite
+            if (!datos || !datos.horaEntrada || !datos.horaSalida) return; // Si no hay datos, se omite
 
-        let horaEntrada = datos.horaEntrada;
-        let horaSalida = datos.horaSalida;
-        let horaAlmuerzo = datos.horarioAlmuerzo;
-        let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
-        let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
+            let horaEntrada = datos.horaEntrada;
+            horaSalida = datos.horaSalida;
+            let horaAlmuerzo = datos.horarioAlmuerzo;
+            let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
+            let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
 
-        eventos.push({ hora: horaEntrada, tipo: "Entrada", operario });
+            eventos.push({ hora: horaEntrada, tipo: "Entrada", operario });
+            console.log(`✅ Agregado: ${horaEntrada} (Entrada - ${operario})`);
 
-        if (horaAlmuerzo) {
-            eventos.push({ hora: horaAlmuerzo, tipo: "Almuerzo", operario });
-            if (horaFinAlmuerzo) eventos.push({ hora: horaFinAlmuerzo, tipo: "Fin Almuerzo", operario, esFin: true });
-        }
+            if (horaAlmuerzo) {
+                eventos.push({ hora: horaAlmuerzo, tipo: "Almuerzo", operario });
+                console.log(`✅ Agregado: ${horaAlmuerzo} (Almuerzo - ${operario})`);
+                
+                if (horaFinAlmuerzo) {
+                    eventos.push({ hora: horaFinAlmuerzo, tipo: "Fin Almuerzo", operario, esFin: true });
+                    console.log(`✅ Agregado: ${horaFinAlmuerzo} (Fin Almuerzo - ${operario})`);
+                }
+            }
 
-        // ✅ Recorre todos los permisos especiales y predefine sus eventos fin
-        if (datos.horariosExtras && datos.horariosExtras.length > 0) {
-            datos.horariosExtras.forEach((permiso) => {
-                let horaInicioPermiso = permiso.hora;
-                let duracionPermiso = permiso.duracion ? parseInt(permiso.duracion) : 0;
-                let horaFinPermiso = sumarMinutos(horaInicioPermiso, duracionPermiso);
+            // ✅ Recorre todos los permisos especiales y predefine sus eventos fin
+            if (datos.horariosExtras && datos.horariosExtras.length > 0) {
+                datos.horariosExtras.forEach((permiso) => {
+                    let horaInicioPermiso = permiso.hora;
+                    let duracionPermiso = permiso.duracion ? parseInt(permiso.duracion) : 0;
+                    let horaFinPermiso = sumarMinutos(horaInicioPermiso, duracionPermiso);
 
-                eventos.push({ hora: horaInicioPermiso, tipo: permiso.descripcion, operario });
-                eventos.push({ hora: horaFinPermiso, tipo: `Fin ${permiso.descripcion}`, operario, esFin: true }); // Marcado como evento fin
-            });
-        }
+                    eventos.push({ hora: horaInicioPermiso, tipo: permiso.descripcion, operario });
+                    console.log(`✅ Agregado: ${horaInicioPermiso} (${permiso.descripcion} - ${operario})`);
 
-        eventoSalida = { hora: horaSalida, tipo: "Salida", operario, esFin: true }; // Salida es un evento fin
+                    eventos.push({ hora: horaFinPermiso, tipo: `Fin ${permiso.descripcion}`, operario, esFin: true });
+                    console.log(`✅ Agregado: ${horaFinPermiso} (Fin ${permiso.descripcion} - ${operario})`);
+                });
+            }
+
+            eventoSalida = { hora: horaSalida, tipo: "Salida", operario, esFin: true };
+            console.log(`✅ Agregado: ${horaSalida} (Salida - ${operario})`);
+        });
     });
-});
-
-
 
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
+    console.log(`✅ Agregado: ${horaInicioProyecto} (Inicio Proyecto)`);
 
     // ✅ Calcular `Fin Proyecto`
     horaFinProyecto = sumarMinutos(horaInicioProyecto, Math.round(duracionTotalProyecto));
     eventos.push({ hora: horaFinProyecto, tipo: "Fin Proyecto" });
+    console.log(`✅ Agregado: ${horaFinProyecto} (Fin Proyecto)`);
 
     eventos.sort((a, b) => a.hora.localeCompare(b.hora));
 
@@ -923,23 +936,29 @@ function generarItinerarioProyecto() {
         eventos.push(eventoSalida);
     }
 
+    // 🔎 Identificación de eventos siguientes y eventos fin siguientes
+    console.log("📌 Clasificando eventos en 'eventos siguientes' y 'eventos fin siguientes'...");
     let indexInicioProyecto = eventos.findIndex(e => e.hora === horaInicioProyecto);
     let eventosSiguientes = [];
     let eventosFinSiguientes = [];
 
     eventos.slice(indexInicioProyecto + 1).forEach(e => {
         if (e.tipo !== "Fin Proyecto") {
-            if (["Fin Almuerzo", "Fin Permiso Especial", "Salida"].includes(e.tipo)) {
+            if (e.esFin) {  // ✅ Se usa la propiedad esFin en lugar de una lista fija
                 eventosFinSiguientes.push(e);
+                console.log(`📌 Evento Fin Siguiente Detectado: ${e.hora} (${e.tipo})`);
             } else {
                 eventosSiguientes.push(e);
+                console.log(`📌 Evento Siguiente Detectado: ${e.hora} (${e.tipo})`);
             }
         }
     });
 
     // ✅ Llamar a la función `verificarError()`
+    console.log("🔎 Enviando eventos a verificarError()...");
     horaFinProyecto = verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida);
 
+    // 📌 Mostrar el itinerario en la interfaz
     let nuevoItinerario = document.createElement("div");
     nuevoItinerario.style.marginTop = "20px";
     nuevoItinerario.style.borderTop = "2px solid black";
@@ -953,9 +972,9 @@ function generarItinerarioProyecto() {
 
     nuevoItinerario.innerHTML = `<h3>📌 Itinerario del Proyecto</h3>${eventosTexto}`;
     restriccionesContainer.appendChild(nuevoItinerario);
+
+    console.log("✅ Itinerario generado correctamente.");
 }
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
