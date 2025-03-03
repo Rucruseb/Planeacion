@@ -951,47 +951,55 @@ function generarItinerarioProyecto() {
     restriccionesContainer.appendChild(nuevoItinerario);
 }
 
-/** ✅ Función independiente para verificar errores y actualizar `Fin Proyecto` */
 function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes, restriccionesContainer, eventos, horaSalida) {
-    let errorDetectado = false;
-    let errorIndice = null;
+    console.log("🔎 Iniciando análisis de error...");
+
     let nuevaHoraFinProyecto = horaFinProyecto;
+    let encontrado = false;
 
-    eventosSiguientes.forEach((evento, index) => {
-        if (horaFinProyecto > evento.hora && !errorDetectado) {
-            errorDetectado = true;
-            errorIndice = index + 1;
+    console.log(`1. Proyecto Fin Original = ${horaFinProyecto}`);
+
+    if (eventosSiguientes.length === 0 || eventosFinSiguientes.length === 0) {
+        console.log("📌 No hay suficientes eventos siguientes o finales para analizar.");
+        return nuevaHoraFinProyecto;
+    }
+
+    for (let i = 0; i < eventosSiguientes.length; i++) {
+        let eventoSiguiente = eventosSiguientes[i];
+        let eventoFinSiguiente = eventosFinSiguientes[i];
+
+        if (!eventoFinSiguiente) {
+            console.log(`🚨 No hay Evento Fin Siguiente correspondiente para Evento Siguiente ${i + 1}.`);
+            continue;
         }
-    });
 
-    if (errorDetectado) {
-        let errorDiv = document.createElement("div");
-        errorDiv.style.marginTop = "20px";
-        errorDiv.style.color = "red";
-        errorDiv.style.fontWeight = "bold";
-        errorDiv.innerHTML = `<h3>⚠️ ERROR: Fin Proyecto es mayor que Evento Siguiente ${errorIndice}</h3>`;
-        restriccionesContainer.appendChild(errorDiv);
+        console.log(`6. Evento Siguiente ${i + 1} = ${eventoSiguiente.hora} (${eventoSiguiente.tipo})`);
+        console.log(`7. Evento Fin Siguiente ${i + 1} = ${eventoFinSiguiente.hora} (${eventoFinSiguiente.tipo})`);
 
-        let eventoSiguienteError = eventosSiguientes[errorIndice - 1];
-        let eventoFinSiguienteError = eventosFinSiguientes[errorIndice - 1];
+        let duracionEntreEventos = calcularDiferenciaMinutos(eventoFinSiguiente.hora, eventoSiguiente.hora);
 
-        if (eventoSiguienteError && eventoFinSiguienteError) {
-            let duracionError = Math.abs(calcularDiferenciaMinutos(eventoSiguienteError.hora, eventoFinSiguienteError.hora));
+        console.log(`8. Duración entre eventos (${eventoFinSiguiente.hora} - ${eventoSiguiente.hora}) = ${duracionEntreEventos} min`);
 
-            let duracionErrorDiv = document.createElement("div");
-            duracionErrorDiv.style.marginTop = "15px";
-            duracionErrorDiv.style.color = "purple";
-            duracionErrorDiv.style.fontWeight = "bold";
-            duracionErrorDiv.innerHTML = `<h3>⏳ Duración entre Evento Siguiente ${errorIndice} y Evento Fin Siguiente ${errorIndice}: ${duracionError} min</h3>`;
-            restriccionesContainer.appendChild(duracionErrorDiv);
+        let proyectoFinCalculado = sumarMinutos(horaFinProyecto, duracionEntreEventos);
 
-            // ✅ **Actualizar `Fin Proyecto` con duración adicional**
-            nuevaHoraFinProyecto = sumarMinutos(horaFinProyecto, duracionError);
+        console.log(`9. Proyecto Fin Calculado = ${horaFinProyecto} + ${duracionEntreEventos} min = ${proyectoFinCalculado}`);
+        console.log(`10. Proyecto Fin en Itinerario = ${nuevaHoraFinProyecto}`);
+
+        if (proyectoFinCalculado === nuevaHoraFinProyecto) {
+            console.log(`✅ Coincidencia encontrada con Evento Siguiente ${i + 1}. Fin Proyecto corregido.`);
+            nuevaHoraFinProyecto = proyectoFinCalculado;
+            encontrado = true;
+            break;
         }
     }
 
-    // ✅ **Si `Fin Proyecto` es igual o mayor a `Hora Salida`, adoptamos `Hora Salida`**
+    if (!encontrado) {
+        console.log("❌ No se encontró una coincidencia exacta con eventos siguientes.");
+    }
+
+    // ✅ **Si `Fin Proyecto` es igual o mayor a `Hora Salida`, se ajusta**
     if (horaSalida && nuevaHoraFinProyecto >= horaSalida) {
+        console.log(`📌 Fin Proyecto ajustado a Hora de Salida: ${horaSalida}`);
         nuevaHoraFinProyecto = horaSalida;
     }
 
@@ -1001,10 +1009,11 @@ function verificarError(horaFinProyecto, eventosSiguientes, eventosFinSiguientes
         eventos[indexFinProyecto].hora = nuevaHoraFinProyecto;
     }
 
-nuevoAnalisis(eventos, restriccionesContainer);
-return nuevaHoraFinProyecto;
-
+    // ✅ **Ejecutar `nuevoAnalisis()` para seguir con el flujo**
+    nuevoAnalisis(eventos, restriccionesContainer);
+    return nuevaHoraFinProyecto;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
