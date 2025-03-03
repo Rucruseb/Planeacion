@@ -878,10 +878,10 @@ function generarItinerarioProyecto() {
     Object.keys(fechasOperario).forEach(fecha => {
         let datos = fechasOperario[fecha];
 
-        if (!datos || !datos.horaEntrada || !datos.horaSalida) return;
+        if (!datos || !datos.horaEntrada || !datos.horaSalida) return; // Si no hay datos, se omite
 
         let horaEntrada = datos.horaEntrada;
-        horaSalida = datos.horaSalida;
+        let horaSalida = datos.horaSalida;
         let horaAlmuerzo = datos.horarioAlmuerzo;
         let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
         let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
@@ -890,25 +890,25 @@ function generarItinerarioProyecto() {
 
         if (horaAlmuerzo) {
             eventos.push({ hora: horaAlmuerzo, tipo: "Almuerzo", operario });
-            if (horaFinAlmuerzo) eventos.push({ hora: horaFinAlmuerzo, tipo: "Fin Almuerzo", operario });
+            if (horaFinAlmuerzo) eventos.push({ hora: horaFinAlmuerzo, tipo: "Fin Almuerzo", operario, esFin: true });
         }
 
-        // ✅ Corrección: Verificar si hay permisos especiales y recorrer todos
+        // ✅ Recorre todos los permisos especiales y predefine sus eventos fin
         if (datos.horariosExtras && datos.horariosExtras.length > 0) {
-            datos.horariosExtras.forEach((permiso, index) => {
-                let permisoNombre = permiso.descripcion ? permiso.descripcion : `Permiso ${index + 1}`;
+            datos.horariosExtras.forEach((permiso) => {
                 let horaInicioPermiso = permiso.hora;
                 let duracionPermiso = permiso.duracion ? parseInt(permiso.duracion) : 0;
                 let horaFinPermiso = sumarMinutos(horaInicioPermiso, duracionPermiso);
 
-                eventos.push({ hora: horaInicioPermiso, tipo: `${permisoNombre}`, operario });
-                eventos.push({ hora: horaFinPermiso, tipo: `Fin ${permisoNombre}`, operario });
+                eventos.push({ hora: horaInicioPermiso, tipo: permiso.descripcion, operario });
+                eventos.push({ hora: horaFinPermiso, tipo: `Fin ${permiso.descripcion}`, operario, esFin: true }); // Marcado como evento fin
             });
         }
 
-        eventoSalida = { hora: horaSalida, tipo: "Salida", operario };
+        eventoSalida = { hora: horaSalida, tipo: "Salida", operario, esFin: true }; // Salida es un evento fin
     });
 });
+
 
 
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
