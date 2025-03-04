@@ -862,6 +862,10 @@ function generarItinerarioProyecto() {
         return;
     }
 
+    // 📌 Extraer solo la fecha en formato YYYY-MM-DD
+    const fechaSeleccionada = fechaInicioInput.split("T")[0];  
+    console.log(`📅 Fecha seleccionada: ${fechaSeleccionada}`);
+
     const horaInicioProyecto = fechaInicioInput.split("T")[1]; 
     const tiempoInput = document.querySelector(".tiempo");
     const cantidadInput = document.querySelector(".cantidad");
@@ -872,54 +876,61 @@ function generarItinerarioProyecto() {
     let eventos = [];
     let eventoSalida = null;
     let horaFinProyecto;
-    let horaSalida = null; // Variable para almacenar la hora de salida
+    let horaSalida = null;
 
     console.log("📌 Procesando operarios y sus horarios...");
     Object.keys(detallesOperarios).forEach(operario => {
         let fechasOperario = detallesOperarios[operario];
 
-        Object.keys(fechasOperario).forEach(fecha => {
-            let datos = fechasOperario[fecha];
+        // ✅ Filtrar solo la fecha específica en lugar de recorrer todas
+        if (!fechasOperario[fechaSeleccionada]) {
+            console.log(`⚠️ No hay datos registrados para ${fechaSeleccionada} en el operario ${operario}`);
+            return;
+        }
 
-            if (!datos || !datos.horaEntrada || !datos.horaSalida) return; // Si no hay datos, se omite
+        let datos = fechasOperario[fechaSeleccionada];
 
-            let horaEntrada = datos.horaEntrada;
-            horaSalida = datos.horaSalida;
-            let horaAlmuerzo = datos.horarioAlmuerzo;
-            let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
-            let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
+        if (!datos.horaEntrada || !datos.horaSalida) {
+            console.warn(`⚠️ Faltan datos clave para ${fechaSeleccionada} en ${operario}.`);
+            return;
+        }
 
-            eventos.push({ hora: horaEntrada, tipo: "Entrada", operario });
-            console.log(`✅ Agregado: ${horaEntrada} (Entrada - ${operario})`);
+        let horaEntrada = datos.horaEntrada;
+        horaSalida = datos.horaSalida;
+        let horaAlmuerzo = datos.horarioAlmuerzo;
+        let duracionAlmuerzo = datos.duracionAlmuerzo ? parseInt(datos.duracionAlmuerzo) : 0;
+        let horaFinAlmuerzo = horaAlmuerzo ? sumarMinutos(horaAlmuerzo, duracionAlmuerzo) : null;
 
-            if (horaAlmuerzo) {
-                eventos.push({ hora: horaAlmuerzo, tipo: "Almuerzo", operario });
-                console.log(`✅ Agregado: ${horaAlmuerzo} (Almuerzo - ${operario})`);
-                
-                if (horaFinAlmuerzo) {
-                    eventos.push({ hora: horaFinAlmuerzo, tipo: "Fin Almuerzo", operario, esFin: true });
-                    console.log(`✅ Agregado: ${horaFinAlmuerzo} (Fin Almuerzo - ${operario})`);
-                }
+        eventos.push({ hora: horaEntrada, tipo: "Entrada", operario });
+        console.log(`✅ Agregado: ${horaEntrada} (Entrada - ${operario})`);
+
+        if (horaAlmuerzo) {
+            eventos.push({ hora: horaAlmuerzo, tipo: "Almuerzo", operario });
+            console.log(`✅ Agregado: ${horaAlmuerzo} (Almuerzo - ${operario})`);
+
+            if (horaFinAlmuerzo) {
+                eventos.push({ hora: horaFinAlmuerzo, tipo: "Fin Almuerzo", operario, esFin: true });
+                console.log(`✅ Agregado: ${horaFinAlmuerzo} (Fin Almuerzo - ${operario})`);
             }
+        }
 
-            // ✅ Recorre todos los permisos especiales y predefine sus eventos fin
-            if (datos.horariosExtras && datos.horariosExtras.length > 0) {
-                datos.horariosExtras.forEach((permiso) => {
-                    let horaInicioPermiso = permiso.hora;
-                    let duracionPermiso = permiso.duracion ? parseInt(permiso.duracion) : 0;
-                    let horaFinPermiso = sumarMinutos(horaInicioPermiso, duracionPermiso);
+        // ✅ Recorre todos los permisos especiales y predefine sus eventos fin
+        if (datos.horariosExtras && datos.horariosExtras.length > 0) {
+            datos.horariosExtras.forEach((permiso) => {
+                let horaInicioPermiso = permiso.hora;
+                let duracionPermiso = permiso.duracion ? parseInt(permiso.duracion) : 0;
+                let horaFinPermiso = sumarMinutos(horaInicioPermiso, duracionPermiso);
 
-                    eventos.push({ hora: horaInicioPermiso, tipo: permiso.descripcion, operario });
-                    console.log(`✅ Agregado: ${horaInicioPermiso} (${permiso.descripcion} - ${operario})`);
+                eventos.push({ hora: horaInicioPermiso, tipo: permiso.descripcion, operario });
+                console.log(`✅ Agregado: ${horaInicioPermiso} (${permiso.descripcion} - ${operario})`);
 
-                    eventos.push({ hora: horaFinPermiso, tipo: `Fin ${permiso.descripcion}`, operario, esFin: true });
-                    console.log(`✅ Agregado: ${horaFinPermiso} (Fin ${permiso.descripcion} - ${operario})`);
-                });
-            }
+                eventos.push({ hora: horaFinPermiso, tipo: `Fin ${permiso.descripcion}`, operario, esFin: true });
+                console.log(`✅ Agregado: ${horaFinPermiso} (Fin ${permiso.descripcion} - ${operario})`);
+            });
+        }
 
-            eventoSalida = { hora: horaSalida, tipo: "Salida", operario, esFin: true };
-            console.log(`✅ Agregado: ${horaSalida} (Salida - ${operario})`);
-        });
+        eventoSalida = { hora: horaSalida, tipo: "Salida", operario, esFin: true };
+        console.log(`✅ Agregado: ${horaSalida} (Salida - ${operario})`);
     });
 
     eventos.push({ hora: horaInicioProyecto, tipo: `Inicio Proyecto (Duración: ${Math.round(duracionTotalProyecto)} min)` });
@@ -975,6 +986,7 @@ function generarItinerarioProyecto() {
 
     console.log("✅ Itinerario generado correctamente.");
 }
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
